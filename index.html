@@ -4,7 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MCQ Generator & Database Search</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body,html{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(135deg,#f1f5f9 0,#e2e8f0 100%)}body{min-height:100vh}.view{width:100%;min-height:100vh;display:flex;justify-content:center;padding:70px 24px 40px}.card{background:#fff;border-radius:20px;padding:35px 48px;width:100%;max-width:1400px;box-shadow:0 15px 35px rgba(15,23,42,.1);border:1px solid #e2e8f0;align-self:flex-start;min-height:calc(100vh - 110px)}.form-inner{max-width:720px;margin:0 auto}@media (min-width:1500px){.card{max-width:1600px}}.top-nav{position:fixed;top:16px;right:16px;z-index:50;display:flex;gap:10px}.nav-btn{background:#4338ca;color:#fff;border:none;padding:11px 18px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 6px 16px rgba(67,56,202,.35);display:flex;align-items:center;gap:6px;white-space:nowrap}.nav-btn:hover{background:#3730a3}.nav-btn.secondary{background:#fff;color:#4338ca;border:1px solid #4338ca;box-shadow:0 6px 16px rgba(15,23,42,.08)}.nav-btn.secondary:hover{background:#eef2ff}.drop-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #6366f1;background:#f8fafc;color:#4f46e5;padding:30px;text-align:center;cursor:pointer;margin-bottom:15px;border-radius:14px;font-weight:600;font-size:15px}.drop-zone svg{width:32px;height:32px;margin-bottom:8px;fill:none;stroke:currentColor;stroke-width:2}.title{display:block;margin:16px 0 8px;font-weight:700;font-size:13px;color:#334155;text-transform:uppercase;letter-spacing:.8px}.options{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}.options label{flex:1;min-width:70px;text-align:center;border:1px solid #cbd5e1;padding:12px 8px;cursor:pointer;background:#fff;border-radius:10px;font-size:14px;color:#475569;font-weight:600;position:relative}.options input[type=radio]{position:absolute;opacity:0;cursor:pointer}.options label.selected{background:#e0e7ff;border-color:#6366f1;color:#4f46e5}.options label small{display:block;font-weight:400;font-size:10px;color:#64748b;margin-top:3px;letter-spacing:.3px}.options label.selected small{color:#4f46e5}.custom-count-box{display:flex;align-items:center;gap:10px;margin-bottom:15px;padding:8px 12px;background:#f8fafc;border:1px dashed #6366f1;border-radius:10px}.custom-count-box label{font-size:13px;font-weight:600;color:#4f46e5;white-space:nowrap}input.form-control,select.form-control{width:100%;padding:12px 14px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;color:#475569;background:#fff;outline:0}.btn{width:100%;padding:14px;border:none;background:#f1f5f9;color:#475569;font-weight:600;font-size:16px;border-radius:10px;cursor:pointer;margin-top:10px;transition:all .2s ease}#btn{background:#4f46e5;color:#fff;margin-top:20px;font-size:17px}.btn-secondary{background:0 0;color:#4f46e5;border:1px solid #4f46e5}.btn-json{background:#92400e;color:#fff;text-decoration:none;display:inline-block;text-align:center;padding:12px;border-radius:10px;font-weight:600;margin-top:10px}.btn-text{background:#065f46;color:#fff;text-decoration:none;display:inline-block;text-align:center;padding:12px;border-radius:10px;font-weight:600;margin-top:10px}.download-group{display:flex;gap:10px;margin-bottom:15px}.download-group a{flex:1}.hidden{display:none!important}.container{margin-top:15px;padding-right:4px}@media (min-width:1150px){#results-view .container{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 44px;align-items:start}#results-view .q-block{break-inside:avoid}}.generated-meta{text-align:center;color:#64748b;font-size:12.5px;margin:-4px 0 14px;font-weight:600}.q-block{margin-bottom:22px;border-bottom:1px solid #f1f5f9;padding-bottom:18px;position:relative}.q-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;flex-wrap:wrap}.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}.badge-new{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}.badge-dup{background:#fef3c7;color:#92400e;border:1px solid #fde68a}.q-text{font-weight:600;color:#1e293b;line-height:1.45;white-space:pre-line}.opt{display:flex;align-items:center;gap:8px;margin:7px 0;color:#475569;background:#f8fafc;padding:9px 12px;border-radius:8px;border:1px solid #e2e8f0}.ans-block{margin-top:10px;padding:9px 12px;background-color:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-weight:600;border-radius:8px}.explain-block{margin-top:7px;padding:9px 12px;background-color:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:8px}.q-block .q-text{font-size:11px!important;line-height:1.45!important}.q-block .opt{font-size:10px!important}.q-block .ans-block{font-size:9.5px!important}.q-block .explain-block{font-size:9px!important}.empty-state{text-align:center;color:#64748b;font-size:14px;padding:30px 10px}.search-box-container{display:flex;gap:8px;margin-bottom:15px}.file-card{background:#f8fafc;border:1px solid #cbd5e1;padding:14px 18px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.file-card:hover{background:#f1f5f9;border-color:#94a3b8}.file-info{cursor:pointer;flex-grow:1}.file-info h4{color:#1e293b;font-size:16px;margin-bottom:4px}.file-info p{color:#64748b;font-size:13px}.file-info p.file-time{color:#94a3b8;font-size:11.5px;margin-top:2px}.file-actions{display:flex;align-items:center;gap:12px}.btn-delete{background:#fee2e2;color:#b91c1c;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:background .2s}.btn-delete:hover{background:#fecaca}.live-push-box{display:flex;gap:8px;margin-bottom:15px;align-items:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px}.live-push-box select{flex:0 0 150px}.btn-live{flex:1;background:#4338ca;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14px}.btn-live:disabled{opacity:.6;cursor:not-allowed}.live-status{font-size:12px;color:#64748b;margin-top:6px}.live-status.success{color:#166534;font-weight:700}.live-status.error{color:#b91c1c;font-weight:700}.warn-banner{background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;padding:10px 14px;border-radius:10px;margin-top:10px;line-height:1.5}.error-banner{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:13px;padding:10px 14px;border-radius:10px;margin-top:10px;line-height:1.5}.json-push-section{margin-top:15px;padding:16px;background:#f8fafc;border:1px dashed #4338ca;border-radius:12px}.json-push-section h4{font-size:14px;color:#1e293b;margin-bottom:10px}.json-file-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}.json-file-row input[type=file]{flex:1;font-size:13px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.json-file-name{font-size:12px;color:#4f46e5;font-weight:600;margin-bottom:8px;word-break:break-all}.json-push-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.json-push-controls select{flex:1;min-width:120px}.force-check{display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;white-space:nowrap}.btn-json-push{background:#4338ca;color:#fff;border:none;padding:12px 16px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;width:100%;margin-top:10px}.btn-json-push:disabled{opacity:.6;cursor:not-allowed}.json-push-result{font-size:12px;color:#64748b;margin-top:8px;white-space:pre-wrap;max-height:120px;overflow-y:auto}.dy-code-hint{font-size:12px;color:#64748b;margin:-6px 0 8px;line-height:1.5}#customDyCodeInput.input-error{border-color:#dc2626;background:#fef2f2}.dy-code-error{font-size:12px;color:#b91c1c;margin:-10px 0 15px;font-weight:600}.download-group a.disabled-link{pointer-events:none;opacity:.5}@media (max-width:640px){.view{padding:64px 10px 30px}.card{padding:22px 18px}.top-nav{top:8px;right:8px}.nav-btn{padding:9px 12px;font-size:12px}.q-block .q-text{font-size:10px!important}.q-block .opt{font-size:9px!important}.q-block .ans-block{font-size:9px!important}.q-block .explain-block{font-size:8.5px!important}}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}body,html{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(135deg,#f1f5f9 0,#e2e8f0 100%)}body{min-height:100vh}.view{width:100%;min-height:100vh;display:flex;justify-content:center;padding:70px 24px 40px}.card{background:#fff;border-radius:20px;padding:35px 48px;width:100%;max-width:1400px;box-shadow:0 15px 35px rgba(15,23,42,.1);border:1px solid #e2e8f0;align-self:flex-start;min-height:calc(100vh - 110px)}.form-inner{max-width:720px;margin:0 auto}@media (min-width:1500px){.card{max-width:1600px}}.top-nav{position:fixed;top:16px;right:16px;z-index:50;display:flex;gap:10px}.nav-btn{background:#4338ca;color:#fff;border:none;padding:11px 18px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 6px 16px rgba(67,56,202,.35);display:flex;align-items:center;gap:6px;white-space:nowrap}.nav-btn:hover{background:#3730a3}.nav-btn.secondary{background:#fff;color:#4338ca;border:1px solid #4338ca;box-shadow:0 6px 16px rgba(15,23,42,.08)}.nav-btn.secondary:hover{background:#eef2ff}.drop-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #6366f1;background:#f8fafc;color:#4f46e5;padding:30px;text-align:center;cursor:pointer;margin-bottom:15px;border-radius:14px;font-weight:600;font-size:15px}.drop-zone svg{width:32px;height:32px;margin-bottom:8px;fill:none;stroke:currentColor;stroke-width:2}.title{display:block;margin:16px 0 8px;font-weight:700;font-size:13px;color:#334155;text-transform:uppercase;letter-spacing:.8px}.options{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}.options label{flex:1;min-width:70px;text-align:center;border:1px solid #cbd5e1;padding:12px 8px;cursor:pointer;background:#fff;border-radius:10px;font-size:14px;color:#475569;font-weight:600;position:relative}.options input[type=radio]{position:absolute;opacity:0;cursor:pointer}.options label.selected{background:#e0e7ff;border-color:#6366f1;color:#4f46e5}.options label small{display:block;font-weight:400;font-size:10px;color:#64748b;margin-top:3px;letter-spacing:.3px}.options label.selected small{color:#4f46e5}.custom-count-box{display:flex;align-items:center;gap:10px;margin-bottom:15px;padding:8px 12px;background:#f8fafc;border:1px dashed #6366f1;border-radius:10px}.custom-count-box label{font-size:13px;font-weight:600;color:#4f46e5;white-space:nowrap}input.form-control,select.form-control{width:100%;padding:12px 14px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;color:#475569;background:#fff;outline:0}.btn{width:100%;padding:14px;border:none;background:#f1f5f9;color:#475569;font-weight:600;font-size:16px;border-radius:10px;cursor:pointer;margin-top:10px;transition:all .2s ease}#btn{background:#4f46e5;color:#fff;margin-top:20px;font-size:17px}#btn:disabled{opacity:.75;cursor:not-allowed}.btn-secondary{background:0 0;color:#4f46e5;border:1px solid #4f46e5}.btn-json{background:#92400e;color:#fff;text-decoration:none;display:inline-block;text-align:center;padding:12px;border-radius:10px;font-weight:600;margin-top:10px}.btn-text{background:#065f46;color:#fff;text-decoration:none;display:inline-block;text-align:center;padding:12px;border-radius:10px;font-weight:600;margin-top:10px}.download-group{display:flex;gap:10px;margin-bottom:15px}.download-group a{flex:1}.hidden{display:none!important}.container{margin-top:15px;padding-right:4px}@media (min-width:1150px){#results-view .container{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 44px;align-items:start}#results-view .q-block{break-inside:avoid}}.generated-meta{text-align:center;color:#64748b;font-size:12.5px;margin:-4px 0 14px;font-weight:600}.q-block{margin-bottom:22px;border-bottom:1px solid #f1f5f9;padding-bottom:18px;position:relative}.q-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;flex-wrap:wrap}.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}.badge-new{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}.badge-dup{background:#fef3c7;color:#92400e;border:1px solid #fde68a}.q-text{font-weight:600;color:#1e293b;line-height:1.45;white-space:pre-line}.opt{display:flex;align-items:center;gap:8px;margin:7px 0;color:#475569;background:#f8fafc;padding:9px 12px;border-radius:8px;border:1px solid #e2e8f0}.ans-block{margin-top:10px;padding:9px 12px;background-color:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-weight:600;border-radius:8px}.explain-block{margin-top:7px;padding:9px 12px;background-color:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:8px}.q-block .q-text{font-size:11px!important;line-height:1.45!important}.q-block .opt{font-size:10px!important}.q-block .ans-block{font-size:9.5px!important}.q-block .explain-block{font-size:9px!important}.empty-state{text-align:center;color:#64748b;font-size:14px;padding:30px 10px}.search-box-container{display:flex;gap:8px;margin-bottom:15px}.file-card{background:#f8fafc;border:1px solid #cbd5e1;padding:14px 18px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.file-card:hover{background:#f1f5f9;border-color:#94a3b8}.file-info{cursor:pointer;flex-grow:1}.file-info h4{color:#1e293b;font-size:16px;margin-bottom:4px}.file-info p{color:#64748b;font-size:13px}.file-info p.file-time{color:#94a3b8;font-size:11.5px;margin-top:2px}.file-actions{display:flex;align-items:center;gap:12px}.btn-delete{background:#fee2e2;color:#b91c1c;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:background .2s}.btn-delete:hover{background:#fecaca}.live-push-box{display:flex;gap:8px;margin-bottom:15px;align-items:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px}.live-push-box select{flex:0 0 150px}.btn-live{flex:1;background:#4338ca;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14px}.btn-live:disabled{opacity:.6;cursor:not-allowed}.live-status{font-size:12px;color:#64748b;margin-top:6px}.live-status.success{color:#166534;font-weight:700}.live-status.error{color:#b91c1c;font-weight:700}.warn-banner{background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;padding:10px 14px;border-radius:10px;margin-top:10px;line-height:1.5}.error-banner{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:13px;padding:10px 14px;border-radius:10px;margin-top:10px;line-height:1.5}.json-push-section{margin-top:15px;padding:16px;background:#f8fafc;border:1px dashed #4338ca;border-radius:12px}.json-push-section h4{font-size:14px;color:#1e293b;margin-bottom:10px}.json-file-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}.json-file-row input[type=file]{flex:1;font-size:13px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.json-file-name{font-size:12px;color:#4f46e5;font-weight:600;margin-bottom:8px;word-break:break-all}.json-push-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.json-push-controls select{flex:1;min-width:120px}.force-check{display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;white-space:nowrap}.btn-json-push{background:#4338ca;color:#fff;border:none;padding:12px 16px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;width:100%;margin-top:10px}.btn-json-push:disabled{opacity:.6;cursor:not-allowed}.json-push-result{font-size:12px;color:#64748b;margin-top:8px;white-space:pre-wrap;max-height:120px;overflow-y:auto}.dy-code-hint{font-size:12px;color:#64748b;margin:-6px 0 8px;line-height:1.5}#customDyCodeInput.input-error{border-color:#dc2626;background:#fef2f2}.dy-code-error{font-size:12px;color:#b91c1c;margin:-10px 0 15px;font-weight:600}.download-group a.disabled-link{pointer-events:none;opacity:.5}
+/* --- progress UI for async generation --- */
+.progress-box{display:none;margin-top:16px;padding:16px 18px;background:#f8fafc;border:1px solid #c7d2fe;border-radius:12px}
+.progress-box.active{display:block}
+.progress-stage{font-size:13.5px;font-weight:700;color:#3730a3;margin-bottom:8px}
+.progress-track{width:100%;height:10px;background:#e2e8f0;border-radius:6px;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#4338ca);transition:width .4s ease}
+.progress-sub{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:#64748b;font-weight:600}
+.progress-note{margin-top:10px;font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;line-height:1.5}
+@media (max-width:640px){.view{padding:64px 10px 30px}.card{padding:22px 18px}.top-nav{top:8px;right:8px}.nav-btn{padding:9px 12px;font-size:12px}.q-block .q-text{font-size:10px!important}.q-block .opt{font-size:9px!important}.q-block .ans-block{font-size:9px!important}.q-block .explain-block{font-size:8.5px!important}}</style>
 </head>
 <body>
 
@@ -75,7 +84,7 @@
 
 <div id="customCountContainer" class="custom-count-box hidden">
 <label for="customCountInput">Enter Question Count:</label>
-<input type="number" id="customCountInput" class="form-control" min="1" max="500" placeholder="e.g. 65, 79, 100, 120">
+<input type="number" id="customCountInput" class="form-control" min="1" max="500" placeholder="e.g. 65, 79, 100, 150, 160">
 </div>
 
 <span class="title">Difficulty Type</span>
@@ -86,6 +95,16 @@
 </div>
 
 <button type="submit" class="btn" id="btn">DONE</button>
+
+<div class="progress-box" id="progressBox">
+  <div class="progress-stage" id="progressStage">Starting…</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-sub">
+    <span id="progressCount">0 / 0 generated</span>
+    <span id="progressWave">Wave 0</span>
+  </div>
+  <div class="progress-note">Large batches (100+) can take several minutes on the free server tier. Keep this tab open — you can also switch tabs, the job keeps running on the server and this will pick back up when the status check completes.</div>
+</div>
 
 <hr style="margin:20px 0; border:0; border-top:1px solid #cbd5e1;">
 
@@ -166,7 +185,9 @@ Force push all (re-push even if already marked as pushed)
 </div>
 
 <script>
+
 const API_BASE = "https://mcq-generator-backend-c6o1.onrender.com";
+
 const fileEl = document.getElementById("file");
 const btn = document.getElementById("btn");
 const standardSelect = document.getElementById("standardSelect");
@@ -176,6 +197,12 @@ const subjectSelect = document.getElementById("subjectSelect");
 const customCountContainer = document.getElementById("customCountContainer");
 const customCountInput = document.getElementById("customCountInput");
 const VIEW_IDS = ["form-view", "history-view", "results-view"];
+
+const progressBox = document.getElementById("progressBox");
+const progressStage = document.getElementById("progressStage");
+const progressFill = document.getElementById("progressFill");
+const progressCount = document.getElementById("progressCount");
+const progressWave = document.getElementById("progressWave");
 
 function showView(id) {
   VIEW_IDS.forEach(v => document.getElementById(v).classList.toggle("hidden", v !== id));
@@ -191,7 +218,7 @@ async function apiFetchJson(url, opts = {}) {
     res = await fetch(url, options);
   } catch (err) {
     console.error("Network error calling", url, err);
-    alert("Backend connection failed: " + err.message + "\n\nMake sure the API server is running at " + API_BASE + ".");
+    alert("Backend connection failed: " + err.message + "\n\nMake sure the API server is running at " + API_BASE + ".\n\nNote: free Render instances spin down when idle, so the FIRST request after inactivity can take up to ~50 seconds to wake it up. If this just failed, wait a few seconds and try again.");
     return null;
   }
   let data;
@@ -485,6 +512,91 @@ groupSelect.onchange = () => {
   });
 };
 
+function resetProgressUI() {
+  progressBox.classList.add("active");
+  progressStage.textContent = "Starting…";
+  progressFill.style.width = "0%";
+  progressCount.textContent = "0 / 0 generated";
+  progressWave.textContent = "Wave 0";
+}
+
+function updateProgressUI(progress, totalRequested) {
+  if (!progress) return;
+  const total = progress.total || totalRequested || 0;
+  const generated = progress.generated || 0;
+  const pct = total > 0 ? Math.min(100, Math.round((generated / total) * 100)) : 0;
+  progressStage.textContent = progress.stage || "Working…";
+  progressFill.style.width = pct + "%";
+  progressCount.textContent = `${generated} / ${total} generated`;
+  progressWave.textContent = `Wave ${progress.wave || 0}`;
+}
+
+function hideProgressUI() {
+  progressBox.classList.remove("active");
+}
+
+async function pollJobUntilDone(jobId, totalRequested) {
+  const POLL_INTERVAL_MS = 3000;
+  while (true) {
+    await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+
+    let res, data;
+    try {
+      res = await fetch(`${API_BASE}/generate-questions/status?job_id=${encodeURIComponent(jobId)}`, { cache: "no-store" });
+      data = await res.json();
+    } catch (err) {
+  
+      console.warn("Poll attempt failed, retrying:", err);
+      continue;
+    }
+
+    if (!res.ok) {
+      throw new Error((data && (data.detail || data.message)) || `Status check failed (${res.status})`);
+    }
+
+    updateProgressUI(data.progress, totalRequested);
+
+    if (data.status === "done") {
+      return data.result;
+    }
+    if (data.status === "error") {
+      throw new Error(data.detail || "Generation failed on the server.");
+    }
+  
+  }
+}
+
+async function generateQuestionsAsync(formData, numQuestions) {
+  resetProgressUI();
+  progressStage.textContent = "Uploading PDF & starting job…";
+
+  let startRes, startData;
+  try {
+    startRes = await fetch(`${API_BASE}/generate-questions/start`, { method: "POST", body: formData });
+    startData = await startRes.json();
+  } catch (err) {
+    hideProgressUI();
+    alert("Backend connection failed: " + err.message + "\n\nMake sure the API server is running at " + API_BASE + ". If it's on Render's free tier, it may take up to ~50s to wake up after being idle -- try again in a moment.");
+    return null;
+  }
+  if (!startRes.ok) {
+    hideProgressUI();
+    alert("Error: " + ((startData && (startData.detail || startData.message)) || `Request failed (${startRes.status})`));
+    return null;
+  }
+
+  const jobId = startData.job_id;
+  try {
+    const result = await pollJobUntilDone(jobId, numQuestions);
+    hideProgressUI();
+    return result;
+  } catch (err) {
+    hideProgressUI();
+    alert("Error: " + err.message);
+    return null;
+  }
+}
+
 document.getElementById("quizForm").onsubmit = async e => {
   e.preventDefault();
   if (!fileEl.files[0]) return alert("Please select a PDF file to generate questions.");
@@ -508,8 +620,9 @@ document.getElementById("quizForm").onsubmit = async e => {
     }
     count = n.toString();
   }
+  const numQuestions = Number.parseInt(count, 10);
 
-  btn.textContent = "Extracting & Storing...";
+  btn.textContent = "Starting…";
   btn.disabled = true;
 
   const formData = new FormData();
@@ -523,7 +636,8 @@ document.getElementById("quizForm").onsubmit = async e => {
   if (prefixResult.value) formData.append("dy_ques_prefix", prefixResult.value);
 
   try {
-    const data = await apiFetchJson(`${API_BASE}/generate-questions`, { method: "POST", body: formData });
+    btn.textContent = "Generating…";
+    const data = await generateQuestionsAsync(formData, numQuestions);
     if (!data) return;
     if (data.status === "success") {
       const fileKey = data.file_key;
