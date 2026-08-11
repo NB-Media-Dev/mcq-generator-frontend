@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCQ Generator & Database Search</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body,html{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(135deg,#f1f5f9 0,#e2e8f0 100%)}body{min-height:100vh}.view{width:100%;min-height:100vh;display:flex;justify-content:center;padding:70px 24px 40px}.card{background:#fff;border-radius:20px;padding:35px 48px;width:100%;max-width:1400px;box-shadow:0 15px 35px rgba(15,23,42,.1);border:1px solid #e2e8f0;align-self:flex-start;min-height:calc(100vh - 110px)}.form-inner{max-width:720px;margin:0 auto}@media (min-width:1500px){.card{max-width:1600px}}.top-nav{position:fixed;top:16px;right:16px;z-index:50;display:flex;gap:10px}.nav-btn{background:#4338ca;color:#fff;border:none;padding:11px 18px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 6px 16px rgba(67,56,202,.35);display:flex;align-items:center;gap:6px;white-space:nowrap}.nav-btn:hover{background:#3730a3}.nav-btn.secondary{background:#fff;color:#4338ca;border:1px solid #4338ca;box-shadow:0 6px 16px rgba(15,23,42,.08)}.nav-btn.secondary:hover{background:#eef2ff}.drop-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #6366f1;background:#f8fafc;color:#4f46e5;padding:30px;text-align:center;cursor:pointer;margin-bottom:15px;border-radius:14px;font-weight:600;font-size:15px}.drop-zone svg{width:32px;height:32px;margin-bottom:8px;fill:none;stroke:currentColor;stroke-width:2}.title{display:block;margin:16px 0 8px;font-weight:700;font-size:13px;color:#334155;text-transform:uppercase;letter-spacing:.8px}.options{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}.options label{flex:1;min-width:70px;text-align:center;border:1px solid #cbd5e1;padding:12px 8px;cursor:pointer;background:#fff;border-radius:10px;font-size:14px;color:#475569;font-weight:600;position:relative}.options input[type=radio]{position:absolute;opacity:0;cursor:pointer}.options label.selected{background:#e0e7ff;border-color:#6366f1;color:#4f46e5}.options label small{display:block;font-weight:400;font-size:10px;color:#64748b;margin-top:3px;letter-spacing:.3px}.options label.selected small{color:#4f46e5}.custom-count-box{display:flex;align-items:center;gap:10px;margin-bottom:15px;padding:8px 12px;background:#f8fafc;border:1px dashed #6366f1;border-radius:10px}.custom-count-box label{font-size:13px;font-weight:600;color:#4f46e5;white-space:nowrap}input.form-control,select.form-control{width:100%;padding:12px 14px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;color:#475569;background:#fff;outline:0}.btn{width:100%;padding:14px;border:none;background:#f1f5f9;color:#475569;font-weight:600;font-size:16px;border-radius:10px;cursor:pointer;margin-top:10px;transition:all .2s ease}#btn{background:#4f46e5;color:#fff;margin-top:20px;font-size:17px}.btn-secondary{background:0 0;color:#4f46e5;border:1px solid #4f46e5}.btn-json{background:#92400e;color:#fff;text-decoration:none;display:inline-block;text-align:center;padding:12px;border-radius:10px;font-weight:600;margin-top:10px}.btn-text{background:#065f46;color:#fff;text-decoration:none;display:inline-block;text-align:center;padding:12px;border-radius:10px;font-weight:600;margin-top:10px}.download-group{display:flex;gap:10px;margin-bottom:15px}.download-group a{flex:1}.hidden{display:none!important}.container{margin-top:15px;padding-right:4px}@media (min-width:1150px){#results-view .container{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 44px;align-items:start}#results-view .q-block{break-inside:avoid}}.generated-meta{text-align:center;color:#64748b;font-size:12.5px;margin:-4px 0 14px;font-weight:600}.q-block{margin-bottom:22px;border-bottom:1px solid #f1f5f9;padding-bottom:18px;position:relative}.q-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;flex-wrap:wrap}.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}.badge-new{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}.badge-dup{background:#fef3c7;color:#92400e;border:1px solid #fde68a}.q-text{font-weight:600;color:#1e293b;line-height:1.45;white-space:pre-line}.opt{display:flex;align-items:center;gap:8px;margin:7px 0;color:#475569;background:#f8fafc;padding:9px 12px;border-radius:8px;border:1px solid #e2e8f0}.ans-block{margin-top:10px;padding:9px 12px;background-color:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-weight:600;border-radius:8px}.explain-block{margin-top:7px;padding:9px 12px;background-color:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:8px}.q-block .q-text{font-size:11px!important;line-height:1.45!important}.q-block .opt{font-size:10px!important}.q-block .ans-block{font-size:9.5px!important}.q-block .explain-block{font-size:9px!important}.empty-state{text-align:center;color:#64748b;font-size:14px;padding:30px 10px}.search-box-container{display:flex;gap:8px;margin-bottom:15px}.file-card{background:#f8fafc;border:1px solid #cbd5e1;padding:14px 18px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.file-card:hover{background:#f1f5f9;border-color:#94a3b8}.file-info{cursor:pointer;flex-grow:1}.file-info h4{color:#1e293b;font-size:16px;margin-bottom:4px}.file-info p{color:#64748b;font-size:13px}.file-info p.file-time{color:#94a3b8;font-size:11.5px;margin-top:2px}.file-actions{display:flex;align-items:center;gap:12px}.btn-delete{background:#fee2e2;color:#b91c1c;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:background .2s}.btn-delete:hover{background:#fecaca}.live-push-box{display:flex;gap:8px;margin-bottom:15px;align-items:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px}.live-push-box select{flex:0 0 150px}.btn-live{flex:1;background:#4338ca;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14px}.btn-live:disabled{opacity:.6;cursor:not-allowed}.live-status{font-size:12px;color:#64748b;margin-top:6px}.live-status.success{color:#166534;font-weight:700}.live-status.error{color:#b91c1c;font-weight:700}.warn-banner{background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;padding:10px 14px;border-radius:10px;margin-top:10px;line-height:1.5}.error-banner{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:13px;padding:10px 14px;border-radius:10px;margin-top:10px;line-height:1.5}.json-push-section{margin-top:15px;padding:16px;background:#f8fafc;border:1px dashed #4338ca;border-radius:12px}.json-push-section h4{font-size:14px;color:#1e293b;margin-bottom:10px}.json-file-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}.json-file-row input[type=file]{flex:1;font-size:13px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.json-file-name{font-size:12px;color:#4f46e5;font-weight:600;margin-bottom:8px;word-break:break-all}.json-push-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.json-push-controls select{flex:1;min-width:120px}.force-check{display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;white-space:nowrap}.btn-json-push{background:#4338ca;color:#fff;border:none;padding:12px 16px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;width:100%;margin-top:10px}.btn-json-push:disabled{opacity:.6;cursor:not-allowed}.json-push-result{font-size:12px;color:#64748b;margin-top:8px;white-space:pre-wrap;max-height:120px;overflow-y:auto}.dy-code-hint{font-size:12px;color:#64748b;margin:-6px 0 8px;line-height:1.5}#customDyCodeInput.input-error{border-color:#dc2626;background:#fef2f2}.dy-code-error{font-size:12px;color:#b91c1c;margin:-10px 0 15px;font-weight:600}.download-group a.disabled-link{pointer-events:none;opacity:.5}@media (max-width:640px){.view{padding:64px 10px 30px}.card{padding:22px 18px}.top-nav{top:8px;right:8px}.nav-btn{padding:9px 12px;font-size:12px}.q-block .q-text{font-size:10px!important}.q-block .opt{font-size:9px!important}.q-block .ans-block{font-size:9px!important}.q-block .explain-block{font-size:8.5px!important}}</style>
+</head>
+<body>
+
+<div class="top-nav">
+<button type="button" class="nav-btn secondary hidden" id="navBackHomeBtn">🏠 Home</button>
+<button type="button" class="nav-btn" id="navViewFilesBtn">📁 View All Stored Files</button>
+</div>
+
+<div class="view" id="form-view">
+<div class="card">
+<form id="quizForm">
+<div class="form-inner">
+<span class="title">Board</span>
+<div class="options" data-group="board">
+<label class="selected"><input type="radio" name="board" value="CBSE" checked><span>CBSE</span></label>
+<label><input type="radio" name="board" value="STATE(TAMIL)"><span>State (Tamil)</span></label>
+<label><input type="radio" name="board" value="STATE(ENGLISH)"><span>State (English)</span></label>
+</div>
+
+<label class="title" for="standardSelect">Standard</label>
+<select id="standardSelect" class="form-control" required>
+<option value="" disabled selected>Select Standard</option>
+<option value="6">6</option><option value="7">7</option><option value="8">8</option>
+<option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+</select>
+
+<div id="groupContainer" class="hidden">
+<label class="title" for="groupSelect">Group</label>
+<select id="groupSelect" class="form-control">
+<option value="" disabled selected>Select Group</option>
+<option value="BIO-MATHS">BIO-MATHS</option>
+<option value="COMPUTER-SCIENCE">COMPUTER-SCIENCE</option>
+<option value="COMMERCE">COMMERCE</option>
+<option value="PURE-SCIENCE">PURE-SCIENCE</option>
+</select>
+</div>
+
+<label class="title" for="subjectSelect">Subject</label>
+<select id="subjectSelect" class="form-control" required>
+<option value="" disabled selected>Select Standard First</option>
+</select>
+
+<label class="title" for="customDyCodeInput">Exam Code (DY Code)</label>
+<div class="dy-code-hint">Enter the exam code for this subject/week (e.g. AITSB7S01).</div>
+<input type="text" id="customDyCodeInput" class="form-control" placeholder="e.g. AITSB7S01" style="text-transform:uppercase; margin-bottom:15px;" autocomplete="off">
+<div id="dyCodeError" class="dy-code-error hidden"></div>
+
+<label class="title" for="customDyQuesPrefixInput">DY Question ID Prefix (optional)</label>
+<div class="dy-code-hint">e.g. enter <b>AI8MA2</b> and questions will be numbered <b>AI8MA201</b>, <b>AI8MA202</b>, ... continue.</div>
+<input type="text" id="customDyQuesPrefixInput" class="form-control" placeholder="e.g. AI8MA2 (optional)" style="text-transform:uppercase; margin-bottom:8px;" autocomplete="off">
+<div id="dyQuesPrefixError" class="dy-code-error hidden"></div>
+
+<span class="title">PDF Document</span>
+<label class="drop-zone">
+<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+<span id="name">CLICK HERE TO CHOOSE PDF FILE</span>
+<input type="file" id="file" accept=".pdf" style="display:none">
+</label>
+
+<span class="title">No of Questions</span>
+<div class="options" data-group="count">
+<label class="selected"><input type="radio" name="count" value="10" checked><span>10</span></label>
+<label><input type="radio" name="count" value="20"><span>20</span></label>
+<label><input type="radio" name="count" value="30"><span>30</span></label>
+<label><input type="radio" name="count" value="40"><span>40</span></label>
+<label id="customCountLabel"><input type="radio" name="count" id="customRadio" value="custom"><span>Custom</span></label>
+</div>
+
+<div id="customCountContainer" class="custom-count-box hidden">
+<label for="customCountInput">Enter Question Count:</label>
+<input type="number" id="customCountInput" class="form-control" min="1" max="500" placeholder="e.g. 65, 79, 100, 120">
+</div>
+
+<span class="title">Difficulty Type</span>
+<div class="options" data-group="level">
+<label class="selected"><input type="radio" name="level" value="EASY" checked><span>Easy</span></label>
+<label><input type="radio" name="level" value="MODERATE"><span>Moderate</span></label>
+<label><input type="radio" name="level" value="HARD"><span>Hard</span></label>
+</div>
+
+<button type="submit" class="btn" id="btn">DONE</button>
+
+<hr style="margin:20px 0; border:0; border-top:1px solid #cbd5e1;">
+
+<label class="title" for="searchInput">Search Files</label>
+<div class="search-box-container">
+<input type="text" id="searchInput" class="form-control" placeholder="Search by filename, subject or code...">
+<button type="button" class="btn btn-secondary" id="searchDbBtn" style="margin-top:0; width:130px;">Search</button>
+</div>
+
+<hr style="margin:20px 0; border:0; border-top:1px solid #cbd5e1;">
+
+<div class="json-push-section">
+<h4>Push an External JSON File to Live DB</h4>
+<div class="json-file-row">
+<input type="file" id="externalJsonFile" accept=".json,application/json">
+</div>
+<div id="externalJsonFileName" class="json-file-name"></div>
+<div class="json-push-controls">
+<select id="externalJsonExamType" class="form-control">
+<option value="daily">Daily Task</option>
+<option value="schedule">Schedule Exam</option>
+<option value="online">Online Exam</option>
+</select>
+<label class="force-check">
+<input type="checkbox" id="externalJsonForce">
+Re-push even if already pushed
+</label>
+</div>
+<button type="button" class="btn-json-push" id="pushExternalJsonBtn">Push JSON File to Live DB</button>
+<div id="externalJsonResult" class="json-push-result"></div>
+</div>
+</div>
+</form>
+</div>
+</div>
+
+<div class="view hidden" id="history-view">
+<div class="card">
+<h3 style="text-align:center; margin-bottom:15px; color:#1e293b; font-size:20px;">📁 All Stored Files</h3>
+<p style="text-align:center;color:#64748b;font-size:13px;margin-bottom:15px;">Select a file below to open all of its questions in full screen.</p>
+<div class="search-box-container">
+<input type="text" id="historyFilterInput" class="form-control" placeholder="Filter stored files by name, subject, standard or board...">
+</div>
+<div class="container" id="historyListContainer"></div>
+<button class="btn btn-secondary" id="backToHomeFromHistory" style="margin-top:15px;">BACK TO HOME</button>
+</div>
+</div>
+
+<div class="view hidden" id="results-view">
+<div class="card">
+<h3 id="viewTitle" style="text-align:center; margin-bottom:6px; color:#1e293b; font-size:20px;">Questions</h3>
+<div id="generatedMeta" class="generated-meta hidden"></div>
+
+<div id="resultsWarnBanner" class="warn-banner hidden"></div>
+
+<div class="download-group" id="downloadGroup">
+<a href="javascript:void(0)" id="downloadJsonBtn" class="btn-json disabled-link" target="_blank" rel="noopener">Download JSON</a>
+<a href="javascript:void(0)" id="downloadTextBtn" class="btn-text disabled-link" target="_blank" rel="noopener">Download Text</a>
+</div>
+
+<div class="live-push-box">
+<select id="examTypeSelect" class="form-control">
+<option value="daily">Daily Task</option>
+<option value="schedule">Schedule Exam</option>
+<option value="online">Online Exam</option>
+</select>
+<button type="button" class="btn-live" id="pushLiveBtn">Push to Live DB</button>
+</div>
+<label class="force-check" style="margin:-8px 0 10px;">
+<input type="checkbox" id="forceLivePush">
+Force push all (re-push even if already marked as pushed)
+</label>
+<div class="live-status" id="liveStatus"></div>
+
+<div class="container" id="output"></div>
+<button class="btn" id="backToFormBtn" style="margin-top:14px;">BACK TO HOME</button>
+</div>
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000";
+const fileEl = document.getElementById("file");
+const btn = document.getElementById("btn");
+const standardSelect = document.getElementById("standardSelect");
+const groupContainer = document.getElementById("groupContainer");
+const groupSelect = document.getElementById("groupSelect");
+const subjectSelect = document.getElementById("subjectSelect");
+const customCountContainer = document.getElementById("customCountContainer");
+const customCountInput = document.getElementById("customCountInput");
+const VIEW_IDS = ["form-view", "history-view", "results-view"];
+
+function showView(id) {
+  VIEW_IDS.forEach(v => document.getElementById(v).classList.toggle("hidden", v !== id));
+  document.getElementById("navBackHomeBtn").classList.toggle("hidden", id === "form-view");
+  document.getElementById("navViewFilesBtn").classList.toggle("hidden", id === "history-view");
+  window.scrollTo(0, 0);
+}
+
+async function apiFetchJson(url, opts = {}) {
+  let res;
+  const options = { cache: "no-store", ...opts };
+  try {
+    res = await fetch(url, options);
+  } catch (err) {
+    console.error("Network error calling", url, err);
+    alert("Backend connection failed: " + err.message + "\n\nMake sure the API server is running at " + API_BASE + ".");
+    return null;
+  }
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    console.error("Failed to parse response from", url, err);
+    alert("Backend returned an unreadable response (HTTP " + res.status + ").");
+    return null;
+  }
+  if (!res.ok) {
+    const msg = (data && (data.detail || data.message)) || `Request failed (${res.status})`;
+    console.error("Backend error from", url, msg);
+    alert("Error: " + msg);
+    return null;
+  }
+  return data;
+}
+
+function formatGeneratedAt(v) {
+  if (!v) return "";
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? "" : d.toLocaleString(void 0, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+}
+function setDownloadLinksEnabled(enabled) {
+  ["downloadJsonBtn", "downloadTextBtn"].forEach(id => {
+    const a = document.getElementById(id);
+    if (!a) return;
+    a.classList.toggle("disabled-link", !enabled);
+    if (!enabled) {
+      a.removeAttribute("href");
+      a.setAttribute("href", "javascript:void(0)");
+    }
+  });
+}
+
+let currentPushFileKey = null;
+
+function showResultsView(title, questions, query, fileKey, warnMsg, generatedAt) {
+  setDownloadLinksEnabled(false);
+
+  document.getElementById("viewTitle").textContent = title;
+  const ts = `_ts=${Date.now()}`;
+
+  const jsonBtn = document.getElementById("downloadJsonBtn");
+  const textBtn = document.getElementById("downloadTextBtn");
+  jsonBtn.href = `${API_BASE}/download/json?${query}&${ts}`;
+  textBtn.href = `${API_BASE}/download/text?${query}&${ts}`;
+
+  setDownloadLinksEnabled(true);
+
+  const metaEl = document.getElementById("generatedMeta");
+  const generatedLabel = formatGeneratedAt(generatedAt);
+  if (generatedLabel) {
+    metaEl.textContent = `🕒 Generated on: ${generatedLabel}`;
+    metaEl.classList.remove("hidden");
+  } else {
+    metaEl.classList.add("hidden");
+    metaEl.textContent = "";
+  }
+
+  const warnEl = document.getElementById("resultsWarnBanner");
+  if (warnMsg) {
+    warnEl.textContent = warnMsg;
+    warnEl.classList.remove("hidden");
+  } else {
+    warnEl.classList.add("hidden");
+    warnEl.textContent = "";
+  }
+
+  currentPushFileKey = fileKey || null;
+  const pushBtn = document.getElementById("pushLiveBtn");
+  pushBtn.disabled = !currentPushFileKey;
+  pushBtn.textContent = currentPushFileKey ? "Push to Live DB" : "Push to Live DB (open a single file to enable)";
+
+  const statusEl = document.getElementById("liveStatus");
+  statusEl.textContent = "";
+  statusEl.classList.remove("error-banner", "success", "error");
+
+  renderQuestions(questions);
+  showView("results-view");
+}
+setDownloadLinksEnabled(false);
+
+document.getElementById("pushLiveBtn").onclick = async () => {
+  if (!currentPushFileKey) return;
+  const examType = document.getElementById("examTypeSelect").value;
+  const statusEl = document.getElementById("liveStatus");
+  const pushBtn = document.getElementById("pushLiveBtn");
+  pushBtn.disabled = true;
+  pushBtn.textContent = "Pushing... (this can take a little while for large batches)";
+  statusEl.classList.remove("success", "error");
+  statusEl.textContent = "Pushing questions to the live DB, please wait...";
+  const force = document.getElementById("forceLivePush").checked;
+  try {
+    const data = await apiFetchJson(`${API_BASE}/push-to-live`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ exam_type: examType, file_key: currentPushFileKey, force })
+    });
+    if (!data) {
+      statusEl.textContent = "Push failed — could not reach the server. See the alert above for details.";
+      statusEl.classList.add("error");
+      return;
+    }
+    if (data.status === "success") {
+      statusEl.textContent = `✅ Pushed successfully! Pushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
+        (data.all_pushed ? " — all selected questions are now in the live DB, in the correct order." : "");
+      statusEl.classList.add(data.failed_count > 0 ? "error" : "success");
+      if (data.failed_count > 0) {
+        console.error("Live push failures:", data.failed);
+        alert(`${data.failed_count} question(s) still failed to push after automatic retries. Check the browser console for the exact error returned by the live DB for each one.`);
+      }
+    } else {
+      statusEl.textContent = "Error: " + (data.detail || data.message || "Unknown error");
+      statusEl.classList.add("error");
+      alert("Error: " + (data.detail || data.message || "Unknown error"));
+    }
+  } catch (err) {
+    console.error("Unexpected error while pushing to live DB:", err);
+    statusEl.textContent = "Unexpected error while pushing — see console for details.";
+    statusEl.classList.add("error");
+  } finally {
+    pushBtn.disabled = false;
+    pushBtn.textContent = "Push to Live DB";
+  }
+};
+
+const externalJsonFile = document.getElementById("externalJsonFile");
+const externalJsonFileName = document.getElementById("externalJsonFileName");
+const pushExternalJsonBtn = document.getElementById("pushExternalJsonBtn");
+const externalJsonResult = document.getElementById("externalJsonResult");
+
+externalJsonFile.onchange = () => {
+  externalJsonFileName.textContent = externalJsonFile.files[0] ? externalJsonFile.files[0].name : "";
+};
+
+pushExternalJsonBtn.onclick = async () => {
+  const file = externalJsonFile.files[0];
+  if (!file) return alert("Choose a .json file from your system first.");
+  const examType = document.getElementById("externalJsonExamType").value;
+  const force = document.getElementById("externalJsonForce").checked;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("exam_type", examType);
+  formData.append("force", force);
+  pushExternalJsonBtn.disabled = true;
+  pushExternalJsonBtn.textContent = "Pushing... (this can take a little while for large files)";
+  externalJsonResult.textContent = "";
+  try {
+    const data = await apiFetchJson(`${API_BASE}/push-json-to-live`, { method: "POST", body: formData });
+    if (!data) return;
+    if (data.status === "success") {
+      let msg = `✅ Pushed successfully!\nFile had ${data.total_in_file} entries (${data.valid_count} valid).\nPushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
+        (data.all_pushed ? "\nAll valid questions are now in the live DB, in the correct order." : "");
+      if (data.invalid_skipped && data.invalid_skipped.length) {
+        msg += `\nSkipped (invalid): ${data.invalid_skipped.length}`;
+        console.warn("Invalid entries skipped:", data.invalid_skipped);
+      }
+      if (data.failed_count > 0) console.error("Live push failures:", data.failed);
+      externalJsonResult.textContent = msg;
+    } else {
+      externalJsonResult.textContent = "Error: " + (data.detail || data.message || "Unknown error");
+    }
+  } finally {
+    pushExternalJsonBtn.disabled = false;
+    pushExternalJsonBtn.textContent = "Push JSON File to Live DB";
+  }
+};
+
+const DY_CODE_PATTERN = /^AI[A-Z0-9]{2,28}$/;
+const dyCodeInput = document.getElementById("customDyCodeInput");
+const dyCodeError = document.getElementById("dyCodeError");
+
+function clearDyCodeError() {
+  dyCodeInput.classList.remove("input-error");
+  dyCodeError.classList.add("hidden");
+  dyCodeError.textContent = "";
+}
+function showDyCodeError(msg) {
+  dyCodeInput.classList.add("input-error");
+  dyCodeError.textContent = msg;
+  dyCodeError.classList.remove("hidden");
+}
+function getSelectedDyCode() {
+  return dyCodeInput.value.trim().toUpperCase();
+}
+function validateDyCodeForSubmit() {
+  const code = getSelectedDyCode();
+  if (!code) {
+    showDyCodeError('Exam Code is required — enter a code (must start with "AI").');
+    dyCodeInput.focus();
+    return null;
+  }
+  if (!DY_CODE_PATTERN.test(code)) {
+    showDyCodeError('Invalid code: must start with "AI" and contain only letters/numbers (e.g. AITSB7S01).');
+    dyCodeInput.focus();
+    return null;
+  }
+  clearDyCodeError();
+  return code;
+}
+dyCodeInput.addEventListener("input", () => {
+  const start = dyCodeInput.selectionStart, end = dyCodeInput.selectionEnd;
+  dyCodeInput.value = dyCodeInput.value.toUpperCase();
+  dyCodeInput.setSelectionRange(start, end);
+  clearDyCodeError();
+});
+
+const DY_QUES_PREFIX_PATTERN = /^[A-Z0-9]{2,20}$/;
+const dyQuesPrefixInput = document.getElementById("customDyQuesPrefixInput");
+const dyQuesPrefixError = document.getElementById("dyQuesPrefixError");
+
+function validateDyQuesPrefixForSubmit() {
+  const val = dyQuesPrefixInput.value.trim().toUpperCase();
+  if (!val) return { ok: true, value: "" };
+  if (!DY_QUES_PREFIX_PATTERN.test(val)) {
+    dyQuesPrefixInput.classList.add("input-error");
+    dyQuesPrefixError.textContent = "Invalid prefix: use only letters/numbers, 2-20 characters (e.g. AI8MA2).";
+    dyQuesPrefixError.classList.remove("hidden");
+    dyQuesPrefixInput.focus();
+    return { ok: false, value: null };
+  }
+  dyQuesPrefixInput.classList.remove("input-error");
+  dyQuesPrefixError.classList.add("hidden");
+  return { ok: true, value: val };
+}
+dyQuesPrefixInput.addEventListener("input", () => {
+  const start = dyQuesPrefixInput.selectionStart, end = dyQuesPrefixInput.selectionEnd;
+  dyQuesPrefixInput.value = dyQuesPrefixInput.value.toUpperCase();
+  dyQuesPrefixInput.setSelectionRange(start, end);
+  dyQuesPrefixInput.classList.remove("input-error");
+  dyQuesPrefixError.classList.add("hidden");
+  dyQuesPrefixError.textContent = "";
+});
+
+document.querySelectorAll(".options").forEach(group => {
+  group.addEventListener("click", e => {
+    const label = e.target.closest("label");
+    if (!label) return;
+    group.querySelectorAll("label").forEach(l => l.classList.remove("selected"));
+    label.classList.add("selected");
+    const radio = label.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+    if (group.dataset.group === "count") {
+      if (radio && radio.value === "custom") {
+        customCountContainer.classList.remove("hidden");
+        customCountInput.focus();
+      } else {
+        customCountContainer.classList.add("hidden");
+      }
+    }
+  });
+});
+
+fileEl.onchange = () => {
+  document.getElementById("name").textContent = fileEl.files[0] ? fileEl.files[0].name : "CLICK HERE TO CHOOSE PDF FILE";
+};
+
+standardSelect.onchange = () => {
+  const std = standardSelect.value;
+  subjectSelect.innerHTML = '<option value="" disabled selected>Select Subject</option>';
+  if (std === "11" || std === "12") {
+    groupContainer.classList.remove("hidden");
+    groupSelect.required = true;
+  } else {
+    groupContainer.classList.add("hidden");
+    groupSelect.required = false;
+    ["TAMIL", "ENGLISH", "MATHS", "SCIENCE", "SOCIAL"].forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = s;
+      subjectSelect.appendChild(opt);
+    });
+  }
+};
+
+groupSelect.onchange = () => {
+  const grp = groupSelect.value;
+  subjectSelect.innerHTML = '<option value="" disabled selected>Select Subject</option>';
+  let extra = [];
+  if (grp === "BIO-MATHS") extra = ["MATHS", "BIOLOGY", "PHYSICS", "CHEMISTRY"];
+  else if (grp === "COMPUTER-SCIENCE") extra = ["MATHS", "PHYSICS", "CHEMISTRY", "COMPUTER SCIENCE"];
+  else if (grp === "COMMERCE") extra = ["ACCOUNTANCY", "COMMERCE", "ECONOMICS", "COMPUTER APPLICATION"];
+  else if (grp === "PURE-SCIENCE") extra = ["PHYSICS", "CHEMISTRY", "BOTANY", "ZOOLOGY"];
+  ["TAMIL", "ENGLISH", ...extra].forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    subjectSelect.appendChild(opt);
+  });
+};
+
+document.getElementById("quizForm").onsubmit = async e => {
+  e.preventDefault();
+  if (!fileEl.files[0]) return alert("Please select a PDF file to generate questions.");
+  if (!standardSelect.value) return alert("Please select a Standard.");
+  if (!subjectSelect.value) return alert("Please select a Subject.");
+
+  const dyCode = validateDyCodeForSubmit();
+  if (!dyCode) return;
+
+  const prefixResult = validateDyQuesPrefixForSubmit();
+  if (!prefixResult.ok) return;
+
+  const countRadio = document.querySelector('input[name="count"]:checked');
+  let count = countRadio ? countRadio.value : "10";
+  if (count === "custom") {
+    const n = Number.parseInt(customCountInput.value.trim(), 10);
+    if (Number.isNaN(n) || n < 1) {
+      alert("Please enter a valid positive number for custom question count.");
+      customCountInput.focus();
+      return;
+    }
+    count = n.toString();
+  }
+
+  btn.textContent = "Extracting & Storing...";
+  btn.disabled = true;
+
+  const formData = new FormData();
+  formData.append("file", fileEl.files[0]);
+  formData.append("board", document.querySelector('input[name="board"]:checked').value);
+  formData.append("standard", standardSelect.value);
+  formData.append("subject", subjectSelect.value);
+  formData.append("num_questions", count);
+  formData.append("difficulty", document.querySelector('input[name="level"]:checked').value);
+  formData.append("dy_code", dyCode);
+  if (prefixResult.value) formData.append("dy_ques_prefix", prefixResult.value);
+
+  try {
+    const data = await apiFetchJson(`${API_BASE}/generate-questions`, { method: "POST", body: formData });
+    if (!data) return;
+    if (data.status === "success") {
+      const fileKey = data.file_key;
+      showResultsView(
+        `File: ${fileKey} (Total Questions: ${data.questions ? data.questions.length : 0})`,
+        data.questions,
+        `file_key=${encodeURIComponent(fileKey)}`,
+        fileKey,
+        data.quota_limited ? data.message : null,
+        data.generated_at
+      );
+    } else {
+      alert("Error: " + (data.detail || data.message || "Unknown error"));
+    }
+  } finally {
+    btn.textContent = "Generate & Append Questions";
+    btn.disabled = false;
+  }
+};
+
+document.getElementById("navViewFilesBtn").onclick = () => loadFilesHistory();
+document.getElementById("navBackHomeBtn").onclick = () => showView("form-view");
+
+let allStoredFiles = [];
+
+async function loadFilesHistory() {
+  const data = await apiFetchJson(`${API_BASE}/files-history`);
+  if (!data) return;
+  if (data.status === "success") {
+    allStoredFiles = data.files || [];
+    document.getElementById("historyFilterInput").value = "";
+    renderFilesHistory(allStoredFiles);
+    showView("history-view");
+  } else {
+    alert("Error: " + (data.detail || data.message || "Unknown error"));
+  }
+}
+
+function renderFilesHistory(files) {
+  const container = document.getElementById("historyListContainer");
+  container.innerHTML = "";
+  container.innerHTML = files.length ? "" : '<p class="empty-state">No stored files found.</p>';
+  files.forEach(f => {
+    const card = document.createElement("div");
+    card.className = "file-card";
+
+    const info = document.createElement("div");
+    info.className = "file-info";
+    info.addEventListener("click", () => openFileRecord(f.file_key, f.generated_at));
+
+    const h4 = document.createElement("h4");
+    h4.textContent = f.file_key;
+    const p = document.createElement("p");
+    p.textContent = `Standard: ${f.standard} | Subject: ${f.subject} | Board: ${f.board}`;
+    info.appendChild(h4);
+    info.appendChild(p);
+
+    const genLabel = formatGeneratedAt(f.generated_at);
+    if (genLabel) {
+      const timeP = document.createElement("p");
+      timeP.className = "file-time";
+      timeP.textContent = `🕒 First generated: ${genLabel}`;
+      info.appendChild(timeP);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "file-actions";
+
+    const countSpan = document.createElement("span");
+    countSpan.style.fontWeight = "600";
+    countSpan.style.color = "#4f46e5";
+    countSpan.style.fontSize = "14px";
+    countSpan.textContent = `${f.count} Qs`;
+
+    const openBtn = document.createElement("button");
+    openBtn.className = "btn-secondary";
+    openBtn.style.padding = "8px 12px";
+    openBtn.style.borderRadius = "8px";
+    openBtn.style.fontWeight = "600";
+    openBtn.style.fontSize = "13px";
+    openBtn.style.cursor = "pointer";
+    openBtn.type = "button";
+    openBtn.textContent = "Open";
+    openBtn.addEventListener("click", () => openFileRecord(f.file_key, f.generated_at));
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn-delete";
+    delBtn.type = "button";
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", () => deleteFileRecord(f.file_key));
+
+    actions.appendChild(countSpan);
+    actions.appendChild(openBtn);
+    actions.appendChild(delBtn);
+    card.appendChild(info);
+    card.appendChild(actions);
+    container.appendChild(card);
+  });
+}
+
+async function openFileRecord(fileKey, generatedAt) {
+  const data = await apiFetchJson(`${API_BASE}/questions?file_key=${encodeURIComponent(fileKey)}`);
+  if (!data) return;
+  if (data.status === "success") {
+    showResultsView(
+      `File: ${fileKey} (${data.questions.length} Questions)`,
+      data.questions,
+      `file_key=${encodeURIComponent(fileKey)}`,
+      fileKey,
+      null,
+      generatedAt
+    );
+  } else {
+    alert("Error: " + (data.detail || data.message || "Unknown error"));
+  }
+}
+
+async function deleteFileRecord(fileKey) {
+  if (!confirm(`Are you sure you want to delete "${fileKey}" and all its questions?`)) return;
+  const data = await apiFetchJson(`${API_BASE}/files?file_key=${encodeURIComponent(fileKey)}`, { method: "DELETE" });
+  if (!data) return;
+  if (data.status === "success") {
+    loadFilesHistory();
+  } else {
+    alert("Error: " + (data.detail || data.message || "Unknown error"));
+  }
+}
+
+function escapeHtml(v) {
+  if (v == null) return "";
+  return String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function buildOptionsHtml(q) {
+  let html = "";
+  const opts = q.options || [q.dy_ans_1, q.dy_ans_2, q.dy_ans_3, q.dy_ans_4];
+  if (opts && opts.length) {
+    const labels = ["A", "B", "C", "D"];
+    opts.forEach((opt, i) => {
+      if (opt) html += `<div class="opt">${labels[i] || ""}. ${escapeHtml(opt)}</div>`;
+    });
+  }
+  return html;
+}
+
+function buildBadgeHtml(q) {
+  let html = "";
+  if (q.is_new) html += '<span class="badge badge-new">NEW</span>';
+  if (q.duplicate_attempts) {
+    const word = q.duplicate_attempts === 1 ? "time" : "times";
+    html += `<span class="badge badge-dup"> Regenerated ${q.duplicate_attempts} ${word} (not duplicated)</span>`;
+  }
+  return html;
+}
+
+function difficultyClass(q) {
+  const d = (q.difficulty || "").toString().trim().toUpperCase();
+  if (d === "EASY") return "diff-easy";
+  if (d === "MODERATE") return "diff-moderate";
+  if (d === "HARD") return "diff-hard";
+  return "";
+}
+
+function dedupeQuestionsByText(list) {
+  const seen = new Set();
+  const out = [];
+  list.forEach(q => {
+    const key = q.question_text ? q.question_text.trim().toLowerCase() : "";
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      out.push(q);
+    }
+  });
+  return out;
+}
+
+function renderQuestions(list) {
+  const output = document.getElementById("output");
+  output.innerHTML = "";
+  if (!list || !list.length) {
+    output.innerHTML = '<p class="empty-state">No questions found.</p>';
+    return;
+  }
+  const unique = dedupeQuestionsByText(list);
+  if (!unique.length) {
+    output.innerHTML = '<p class="empty-state">No unique questions available.</p>';
+    return;
+  }
+  unique.forEach((q, i) => {
+    const optsHtml = buildOptionsHtml(q);
+    const badgeHtml = buildBadgeHtml(q);
+    const diffClass = difficultyClass(q);
+    output.innerHTML += `
+                    <div class="q-block ${diffClass}">
+                        <div class="q-header">
+                            <div class="q-text"><b>[${escapeHtml(q.file_key || "General")}]</b> ${i + 1}. ${escapeHtml(q.question_text)}</div>
+                            ${badgeHtml}
+                        </div>
+                        ${optsHtml}
+                        <div class="ans-block">Correct Answer: ${escapeHtml(q.correct_answer)}</div>
+                        <div class="explain-block">Explanation: ${escapeHtml(q.explanation)}</div>
+                    </div>
+                `;
+  });
+}
+
+document.getElementById("historyFilterInput").addEventListener("input", e => {
+  const q = e.target.value.trim().toLowerCase();
+  if (!q) return renderFilesHistory(allStoredFiles);
+  renderFilesHistory(allStoredFiles.filter(f =>
+    (f.file_key || "").toLowerCase().includes(q) ||
+    (f.subject || "").toLowerCase().includes(q) ||
+    (f.standard || "").toLowerCase().includes(q) ||
+    (f.board || "").toLowerCase().includes(q)
+  ));
+});
+
+document.getElementById("searchDbBtn").onclick = async () => {
+  const q = document.getElementById("searchInput").value.trim();
+  if (!q) return alert("Please enter a search query.");
+  const data = await apiFetchJson(`${API_BASE}/questions?search=${encodeURIComponent(q)}`);
+  if (!data) return;
+  if (data.status === "success") {
+    showResultsView(`Search Results for: "${q}"`, data.questions, `search=${encodeURIComponent(q)}`);
+  } else {
+    alert("Error: " + (data.detail || data.message || "Unknown error"));
+  }
+};
+
+document.getElementById("backToFormBtn").onclick = () => showView("form-view");
+document.getElementById("backToHomeFromHistory").onclick = () => showView("form-view");
+</script>
+</body>
+</html>
