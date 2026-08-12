@@ -125,7 +125,7 @@ Re-push even if already pushed
 <div class="view hidden" id="history-view">
 <div class="card">
 <h3 style="text-align:center; margin-bottom:15px; color:#1e293b; font-size:20px;">📁 All Stored Files</h3>
-<p style="text-align:center;color:#64748b;font-size:13px;margin-bottom:15px;">Select a file below to open all of its questions in full screen.</p>
+<p style="text-align:center;color:#64748b;font-size:13px;margin-bottom:15px;">Select a file below to open all of its questions in full screen. Files stay here — including ones already pushed to the live DB — until you delete them.</p>
 <div class="search-box-container">
 <input type="text" id="historyFilterInput" class="form-control" placeholder="Filter stored files by name, subject, standard or board...">
 </div>
@@ -221,10 +221,12 @@ function parseServerDate(v) {
   return isNaN(d.getTime()) ? null : d;
 }
 
+/* Fixed to "en-US" so the label always reads like "Aug 11, 2026, 3:43 PM"
+   regardless of the visitor's own browser/OS locale settings. */
 function formatGeneratedAt(v) {
   const d = parseServerDate(v);
   if (!d) return "";
-  return d.toLocaleString(void 0, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  return d.toLocaleString("en-US", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 /* Relative "time ago" label, used for the live-updating UI. */
@@ -242,7 +244,7 @@ function timeAgo(v) {
   if (diffDay < 7) return `${diffDay} day${diffDay === 1 ? "" : "s"} ago`;
   return formatGeneratedAt(v);
 }
-  
+
 function refreshLiveTimestamps() {
   document.querySelectorAll("[data-generated-at]").forEach(el => {
     const label = el.dataset.label || "🕒";
@@ -339,6 +341,9 @@ document.getElementById("pushLiveBtn").onclick = async () => {
       return;
     }
     if (data.status === "success") {
+      /* NOTE: pushing to the live DB never removes or hides the file here —
+         it stays in "View All Stored Files" and in search results exactly
+         as before. Only the explicit Delete button removes a file. */
       statusEl.textContent = `✅ Pushed successfully! Pushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
         (data.all_pushed ? " — all selected questions are now in the live DB, in the correct order." : "");
       statusEl.classList.add(data.failed_count > 0 ? "error" : "success");
@@ -526,6 +531,49 @@ groupSelect.onchange = () => {
   });
 };
 
+/*
+ * ---- Generation flow (fixed) ----
+ * Previously this called the SYNCHRONOUS /generate-questions endpoint and
+ * just awaited it. For larger batches that call can run long enough to hit
+ * a host/proxy timeout (very common on Render's free tier), which surfaced
+ * to the user as a generic network error even though the backend might
+ * still have been working. The backend already exposes a JOB-BASED flow
+ * for exactly this reason:
+ *   1. POST /generate-questions/start  -> returns { job_id }
+ *   2. GET  /generate-questions/status?job_id=...  -> poll until status
+ *      is "done" (with the full result) or "error".
+ * Job state is persisted in the backend's own database, so it survives a
+ * cold start/restart mid-job too. This section switches the UI to use
+ * that flow, with live progress shown on the submit button.
+ */
+const GENERATION_POLL_INTERVAL_MS = 2500;
+
+async function pollGenerationJob(jobId) {
+  while (true) {
+    const data = await apiFetchJson(`${API_BASE}/generate-questions/status?job_id=${encodeURIComponent(jobId)}`);
+    if (!data) return null; 
+
+    if (data.status === "running") {
+      const p = data.progress || {};
+      const stage = p.stage || "Working";
+      const generated = p.generated ?? 0;
+      const total = p.total ?? "?";
+      btn.textContent = `${stage} (${generated}/${total})...`;
+      await new Promise(resolve => setTimeout(resolve, GENERATION_POLL_INTERVAL_MS));
+      continue;
+    }
+    if (data.status === "done") {
+      return data.result;
+    }
+    if (data.status === "error") {
+      alert("Error: " + (data.detail || "Question generation failed."));
+      return null;
+    }
+    alert("Unexpected job status received from server: " + data.status);
+    return null;
+  }
+}
+
 document.getElementById("quizForm").onsubmit = async e => {
   e.preventDefault();
   if (!fileEl.files[0]) return alert("Please select a PDF file to generate questions.");
@@ -550,9 +598,6 @@ document.getElementById("quizForm").onsubmit = async e => {
     count = n.toString();
   }
 
-  btn.textContent = "Extracting & Storing...";
-  btn.disabled = true;
-
   const formData = new FormData();
   formData.append("file", fileEl.files[0]);
   formData.append("board", document.querySelector('input[name="board"]:checked').value);
@@ -563,22 +608,28 @@ document.getElementById("quizForm").onsubmit = async e => {
   formData.append("dy_code", dyCode);
   if (prefixResult.value) formData.append("dy_ques_prefix", prefixResult.value);
 
+  btn.textContent = "Uploading PDF...";
+  btn.disabled = true;
+
   try {
-    const data = await apiFetchJson(`${API_BASE}/generate-questions`, { method: "POST", body: formData });
-    if (!data) return;
-    if (data.status === "success") {
-      const fileKey = data.file_key;
-      showResultsView(
-        `File: ${fileKey} (Total Questions: ${data.questions ? data.questions.length : 0})`,
-        data.questions,
-        `file_key=${encodeURIComponent(fileKey)}`,
-        fileKey,
-        data.quota_limited ? data.message : null,
-        data.generated_at
-      );
-    } else {
-      alert("Error: " + (data.detail || data.message || "Unknown error"));
+  
+    const startData = await apiFetchJson(`${API_BASE}/generate-questions/start`, { method: "POST", body: formData });
+    if (!startData || startData.status !== "success" || !startData.job_id) {
+      return; 
     }
+
+    const result = await pollGenerationJob(startData.job_id);
+    if (!result) return; 
+
+    const fileKey = result.file_key;
+    showResultsView(
+      `File: ${fileKey} (Total Questions: ${result.questions ? result.questions.length : 0})`,
+      result.questions,
+      `file_key=${encodeURIComponent(fileKey)}`,
+      fileKey,
+      result.quota_limited ? result.message : null,
+      result.generated_at
+    );
   } finally {
     btn.textContent = "Generate & Append Questions";
     btn.disabled = false;
@@ -591,6 +642,7 @@ document.getElementById("navBackHomeBtn").onclick = () => showView("form-view");
 let allStoredFiles = [];
 
 async function loadFilesHistory() {
+
   const data = await apiFetchJson(`${API_BASE}/files-history`);
   if (!data) return;
   if (data.status === "success") {
@@ -685,6 +737,7 @@ async function openFileRecord(fileKey, generatedAt) {
 }
 
 async function deleteFileRecord(fileKey) {
+
   if (!confirm(`Are you sure you want to delete "${fileKey}" and all its questions?`)) return;
   const data = await apiFetchJson(`${API_BASE}/files?file_key=${encodeURIComponent(fileKey)}`, { method: "DELETE" });
   if (!data) return;
