@@ -125,7 +125,7 @@ Re-push even if already pushed
 <div class="view hidden" id="history-view">
 <div class="card">
 <h3 style="text-align:center; margin-bottom:15px; color:#1e293b; font-size:20px;">📁 All Stored Files</h3>
-<p style="text-align:center;color:#64748b;font-size:13px;margin-bottom:15px;">Select a file below to open all of its questions in full screen. Files stay here — including ones already pushed to the live DB — until you delete them.</p>
+<p style="text-align:center;color:#64748b;font-size:13px;margin-bottom:15px;">Select a file below to open all of its questions in full screen.</p>
 <div class="search-box-container">
 <input type="text" id="historyFilterInput" class="form-control" placeholder="Filter stored files by name, subject, standard or board...">
 </div>
@@ -166,7 +166,7 @@ Force push all (re-push even if already marked as pushed)
 </div>
 
 <script>
-const API_BASE = "https://mcq-generator-backend-c6o1.onrender.com";
+const API_BASE = "http://127.0.0.1:8000";
 const fileEl = document.getElementById("file");
 const btn = document.getElementById("btn");
 const standardSelect = document.getElementById("standardSelect");
@@ -210,49 +210,50 @@ async function apiFetchJson(url, opts = {}) {
   }
   return data;
 }
-function parseServerDate(v) {
+
+/*
+ * ---- Timestamp handling (fixed) ----
+ * The backend stores `generated_at` as a NAIVE timestamp (no timezone info
+ * attached) — it's simply whatever the wall clock said on the machine
+ * running the backend at the moment of generation. Handing a naive string
+ * straight to `new Date(v)` is unreliable: depending on the exact string
+ * shape, browsers may silently treat it as UTC and shift it by the
+ * viewer's timezone offset when displaying it.
+ *
+ * We don't want any shifting at all — the goal is to show EXACTLY the
+ * clock time recorded by the generating system, no matter which device or
+ * timezone is later used to view the page. So we parse the year / month /
+ * day / hour / minute / second out of the string ourselves and build the
+ * Date from those raw numbers (the local-components Date constructor,
+ * `new Date(y, m, d, h, mi, s)`, never applies any timezone conversion).
+ *
+ * If a timestamp DOES come with an explicit timezone/offset (e.g. ends in
+ * "Z" or "+05:30"), we fall back to normal parsing since that case is
+ * unambiguous already.
+ */
+function parseServerTimestamp(v) {
   if (!v) return null;
-  let s = String(v).trim();
-  const hasTz = /Z$|[+-]\d{2}:?\d{2}$/.test(s);
-  if (!hasTz) {
-    s = s.replace(" ", "T") + "Z";
+  const s = String(v).trim();
+  const naiveMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
+  const hasExplicitTz = /Z$|[+-]\d{2}:?\d{2}$/.test(s);
+  if (naiveMatch && !hasExplicitTz) {
+    const [, y, mo, d, h, mi, se] = naiveMatch;
+    return new Date(
+      parseInt(y, 10), parseInt(mo, 10) - 1, parseInt(d, 10),
+      parseInt(h, 10), parseInt(mi, 10), se ? parseInt(se, 10) : 0
+    );
   }
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
+  const d2 = new Date(s);
+  return isNaN(d2.getTime()) ? null : d2;
 }
 
-/* Fixed to "en-US" so the label always reads like "Aug 11, 2026, 3:43 PM"
-   regardless of the visitor's own browser/OS locale settings. */
+/* Produces labels like "Aug 11, 2026, 3:43 PM" — the exact clock time
+   recorded by the system that generated the file. */
 function formatGeneratedAt(v) {
-  const d = parseServerDate(v);
+  const d = parseServerTimestamp(v);
   if (!d) return "";
   return d.toLocaleString("en-US", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
-
-/* Relative "time ago" label, used for the live-updating UI. */
-function timeAgo(v) {
-  const d = parseServerDate(v);
-  if (!d) return "";
-  const diffSec = Math.round((Date.now() - d.getTime()) / 1000);
-  if (diffSec < 5) return "Just now";
-  if (diffSec < 60) return `${diffSec} sec ago`;
-  const diffMin = Math.round(diffSec / 60);
-  if (diffMin < 60) return `${diffMin} min ago`;
-  const diffHr = Math.round(diffMin / 60);
-  if (diffHr < 24) return `${diffHr} hr ago`;
-  const diffDay = Math.round(diffHr / 24);
-  if (diffDay < 7) return `${diffDay} day${diffDay === 1 ? "" : "s"} ago`;
-  return formatGeneratedAt(v);
-}
-
-function refreshLiveTimestamps() {
-  document.querySelectorAll("[data-generated-at]").forEach(el => {
-    const label = el.dataset.label || "🕒";
-    el.textContent = `${label} ${timeAgo(el.dataset.generatedAt)}`;
-  });
-}
-setInterval(refreshLiveTimestamps, 30000);
-
 
 function setDownloadLinksEnabled(enabled) {
   ["downloadJsonBtn", "downloadTextBtn"].forEach(id => {
@@ -282,16 +283,11 @@ function showResultsView(title, questions, query, fileKey, warnMsg, generatedAt)
   setDownloadLinksEnabled(true);
 
   const metaEl = document.getElementById("generatedMeta");
-  if (generatedAt) {
-    metaEl.dataset.generatedAt = generatedAt;
-    metaEl.dataset.label = "🕒 Generated";
-    metaEl.title = formatGeneratedAt(generatedAt);
-    metaEl.textContent = `🕒 Generated ${timeAgo(generatedAt)}`;
+  const generatedLabel = formatGeneratedAt(generatedAt);
+  if (generatedLabel) {
+    metaEl.textContent = `🕒 Generated ${generatedLabel}`;
     metaEl.classList.remove("hidden");
   } else {
-    delete metaEl.dataset.generatedAt;
-    delete metaEl.dataset.label;
-    metaEl.removeAttribute("title");
     metaEl.classList.add("hidden");
     metaEl.textContent = "";
   }
@@ -341,9 +337,9 @@ document.getElementById("pushLiveBtn").onclick = async () => {
       return;
     }
     if (data.status === "success") {
-      /* NOTE: pushing to the live DB never removes or hides the file here —
-         it stays in "View All Stored Files" and in search results exactly
-         as before. Only the explicit Delete button removes a file. */
+      /* Pushing to the live DB never removes or hides the file — it stays
+         in "View All Stored Files" and search results exactly as before.
+         Only the explicit Delete button removes a file. */
       statusEl.textContent = `✅ Pushed successfully! Pushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
         (data.all_pushed ? " — all selected questions are now in the live DB, in the correct order." : "");
       statusEl.classList.add(data.failed_count > 0 ? "error" : "success");
@@ -531,49 +527,6 @@ groupSelect.onchange = () => {
   });
 };
 
-/*
- * ---- Generation flow (fixed) ----
- * Previously this called the SYNCHRONOUS /generate-questions endpoint and
- * just awaited it. For larger batches that call can run long enough to hit
- * a host/proxy timeout (very common on Render's free tier), which surfaced
- * to the user as a generic network error even though the backend might
- * still have been working. The backend already exposes a JOB-BASED flow
- * for exactly this reason:
- *   1. POST /generate-questions/start  -> returns { job_id }
- *   2. GET  /generate-questions/status?job_id=...  -> poll until status
- *      is "done" (with the full result) or "error".
- * Job state is persisted in the backend's own database, so it survives a
- * cold start/restart mid-job too. This section switches the UI to use
- * that flow, with live progress shown on the submit button.
- */
-const GENERATION_POLL_INTERVAL_MS = 2500;
-
-async function pollGenerationJob(jobId) {
-  while (true) {
-    const data = await apiFetchJson(`${API_BASE}/generate-questions/status?job_id=${encodeURIComponent(jobId)}`);
-    if (!data) return null; 
-
-    if (data.status === "running") {
-      const p = data.progress || {};
-      const stage = p.stage || "Working";
-      const generated = p.generated ?? 0;
-      const total = p.total ?? "?";
-      btn.textContent = `${stage} (${generated}/${total})...`;
-      await new Promise(resolve => setTimeout(resolve, GENERATION_POLL_INTERVAL_MS));
-      continue;
-    }
-    if (data.status === "done") {
-      return data.result;
-    }
-    if (data.status === "error") {
-      alert("Error: " + (data.detail || "Question generation failed."));
-      return null;
-    }
-    alert("Unexpected job status received from server: " + data.status);
-    return null;
-  }
-}
-
 document.getElementById("quizForm").onsubmit = async e => {
   e.preventDefault();
   if (!fileEl.files[0]) return alert("Please select a PDF file to generate questions.");
@@ -598,6 +551,9 @@ document.getElementById("quizForm").onsubmit = async e => {
     count = n.toString();
   }
 
+  btn.textContent = "Extracting & Storing...";
+  btn.disabled = true;
+
   const formData = new FormData();
   formData.append("file", fileEl.files[0]);
   formData.append("board", document.querySelector('input[name="board"]:checked').value);
@@ -608,28 +564,23 @@ document.getElementById("quizForm").onsubmit = async e => {
   formData.append("dy_code", dyCode);
   if (prefixResult.value) formData.append("dy_ques_prefix", prefixResult.value);
 
-  btn.textContent = "Uploading PDF...";
-  btn.disabled = true;
-
   try {
+    const data = await apiFetchJson(`${API_BASE}/generate-questions`, { method: "POST", body: formData });
+    if (!data) return;
+    if (data.status === "success") {
   
-    const startData = await apiFetchJson(`${API_BASE}/generate-questions/start`, { method: "POST", body: formData });
-    if (!startData || startData.status !== "success" || !startData.job_id) {
-      return; 
+      const fileKey = data.file_key;
+      showResultsView(
+        `File: ${fileKey} (Total Questions: ${data.questions ? data.questions.length : 0})`,
+        data.questions,
+        `file_key=${encodeURIComponent(fileKey)}`,
+        fileKey,
+        data.quota_limited ? data.message : null,
+        data.generated_at
+      );
+    } else {
+      alert("Error: " + (data.detail || data.message || "Unknown error"));
     }
-
-    const result = await pollGenerationJob(startData.job_id);
-    if (!result) return; 
-
-    const fileKey = result.file_key;
-    showResultsView(
-      `File: ${fileKey} (Total Questions: ${result.questions ? result.questions.length : 0})`,
-      result.questions,
-      `file_key=${encodeURIComponent(fileKey)}`,
-      fileKey,
-      result.quota_limited ? result.message : null,
-      result.generated_at
-    );
   } finally {
     btn.textContent = "Generate & Append Questions";
     btn.disabled = false;
@@ -674,13 +625,11 @@ function renderFilesHistory(files) {
     info.appendChild(h4);
     info.appendChild(p);
 
-    if (f.generated_at) {
+    const genLabel = formatGeneratedAt(f.generated_at);
+    if (genLabel) {
       const timeP = document.createElement("p");
       timeP.className = "file-time";
-      timeP.dataset.generatedAt = f.generated_at;
-      timeP.dataset.label = "🕒 First generated";
-      timeP.title = formatGeneratedAt(f.generated_at);
-      timeP.textContent = `🕒 First generated ${timeAgo(f.generated_at)}`;
+      timeP.textContent = `🕒 Generated ${genLabel}`;
       info.appendChild(timeP);
     }
 
