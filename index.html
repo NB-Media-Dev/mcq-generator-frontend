@@ -166,7 +166,7 @@ Force push all (re-push even if already marked as pushed)
 </div>
 
 <script>
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://mcq-generator-backend-c6o1.onrender.com";
 const fileEl = document.getElementById("file");
 const btn = document.getElementById("btn");
 const standardSelect = document.getElementById("standardSelect");
@@ -211,26 +211,6 @@ async function apiFetchJson(url, opts = {}) {
   return data;
 }
 
-/*
- * ---- Timestamp handling (fixed) ----
- * The backend stores `generated_at` as a NAIVE timestamp (no timezone info
- * attached) — it's simply whatever the wall clock said on the machine
- * running the backend at the moment of generation. Handing a naive string
- * straight to `new Date(v)` is unreliable: depending on the exact string
- * shape, browsers may silently treat it as UTC and shift it by the
- * viewer's timezone offset when displaying it.
- *
- * We don't want any shifting at all — the goal is to show EXACTLY the
- * clock time recorded by the generating system, no matter which device or
- * timezone is later used to view the page. So we parse the year / month /
- * day / hour / minute / second out of the string ourselves and build the
- * Date from those raw numbers (the local-components Date constructor,
- * `new Date(y, m, d, h, mi, s)`, never applies any timezone conversion).
- *
- * If a timestamp DOES come with an explicit timezone/offset (e.g. ends in
- * "Z" or "+05:30"), we fall back to normal parsing since that case is
- * unambiguous already.
- */
 function parseServerTimestamp(v) {
   if (!v) return null;
   const s = String(v).trim();
@@ -247,8 +227,6 @@ function parseServerTimestamp(v) {
   return isNaN(d2.getTime()) ? null : d2;
 }
 
-/* Produces labels like "Aug 11, 2026, 3:43 PM" — the exact clock time
-   recorded by the system that generated the file. */
 function formatGeneratedAt(v) {
   const d = parseServerTimestamp(v);
   if (!d) return "";
