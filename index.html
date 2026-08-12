@@ -505,9 +505,8 @@ groupSelect.onchange = () => {
   });
 };
 
-
-const POLL_INTERVAL_MS = 2000;
-const POLL_MAX_MISSES = 5; 
+const POLL_INTERVAL_MS = 3000;
+const POLL_MAX_MISSES = 20;
 
 function setGenProgress(text) {
   if (!text) {
@@ -540,8 +539,9 @@ async function pollJobUntilDone(jobId) {
     } catch (err) {
       misses++;
       console.warn(`Poll attempt failed (${misses}/${POLL_MAX_MISSES}):`, err);
+
       if (misses >= POLL_MAX_MISSES) {
-        throw new Error("Lost connection to the server while checking generation progress. Please try again.");
+        throw new Error("Lost connection to the server while checking generation progress after several retries. The job may still be running on the server — reopen 'View All Stored Files' in a minute to check, or try again.");
       }
       continue;
     }
@@ -591,7 +591,6 @@ document.getElementById("quizForm").onsubmit = async e => {
 
   btn.textContent = "Starting...";
   btn.disabled = true;
-  setGenProgress("Uploading PDF and starting the job...");
 
   const formData = new FormData();
   formData.append("file", fileEl.files[0]);
