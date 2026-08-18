@@ -1,4 +1,4 @@
-const API_BASE = "https://mcq-generator-backend-c6o1.onrender.com";
+const API_BASE = "http://mcq-generator-backend-c6o1.onrender.com";
 const fileEl = document.getElementById("file");
 const btn = document.getElementById("btn");
 const standardSelect = document.getElementById("standardSelect");
