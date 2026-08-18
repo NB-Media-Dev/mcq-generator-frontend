@@ -43,13 +43,6 @@ async function apiFetchJson(url, opts = {}) {
   return data;
 }
 
-/* ---------- FIXED DATE/TIME HANDLING ----------
-   The backend sends timestamps that are usually UTC but WITHOUT a timezone
-   marker (no trailing "Z" or "+hh:mm"). Browsers parse timezone-less
-   date-time strings as LOCAL time, which silently shifts the displayed
-   time by your UTC offset (e.g. -5:30 for IST). parseServerDate() detects
-   that case and appends "Z" so the string is correctly interpreted as UTC,
-   then JS converts it to the visitor's local time automatically. */
 function parseServerDate(v) {
   if (!v) return null;
   let s = String(v).trim();
@@ -67,7 +60,6 @@ function formatGeneratedAt(v) {
   return d.toLocaleString(void 0, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
-/* Relative "time ago" label, used for the live-updating UI. */
 function timeAgo(v) {
   const d = parseServerDate(v);
   if (!d) return "";
@@ -83,9 +75,6 @@ function timeAgo(v) {
   return formatGeneratedAt(v);
 }
 
-/* Shows the exact date/time AND a live "(x ago)" suffix together, e.g.
-   "11 Aug 2026, 3:35 PM (13 min ago)" -- so the precise time is always
-   visible, not just the relative label. */
 function combinedTimestampLabel(v) {
   const abs = formatGeneratedAt(v);
   if (!abs) return "";
@@ -93,9 +82,6 @@ function combinedTimestampLabel(v) {
   return rel ? `${abs} (${rel})` : abs;
 }
 
-/* Re-renders every on-screen timestamp that carries data-generated-at,
-   so the "(x ago)" part keeps advancing without a page reload, while the
-   exact date/time stays fixed and always visible. */
 function refreshLiveTimestamps() {
   document.querySelectorAll("[data-generated-at]").forEach(el => {
     const label = el.dataset.label || "🕒";
@@ -103,7 +89,7 @@ function refreshLiveTimestamps() {
   });
 }
 setInterval(refreshLiveTimestamps, 30000);
-/* ------------------------------------------------ */
+
 
 function setDownloadLinksEnabled(enabled) {
   ["downloadJsonBtn", "downloadTextBtn"].forEach(id => {
@@ -192,7 +178,7 @@ document.getElementById("pushLiveBtn").onclick = async () => {
       return;
     }
     if (data.status === "success") {
-      statusEl.textContent = `✅ Pushed successfully! Pushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
+      statusEl.textContent = ` Pushed successfully! Pushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
         (data.all_pushed ? " — all selected questions are now in the live DB, in the correct order." : "");
       statusEl.classList.add(data.failed_count > 0 ? "error" : "success");
       if (data.failed_count > 0) {
@@ -239,7 +225,7 @@ pushExternalJsonBtn.onclick = async () => {
     const data = await apiFetchJson(`${API_BASE}/push-json-to-live`, { method: "POST", body: formData });
     if (!data) return;
     if (data.status === "success") {
-      let msg = `✅ Pushed successfully!\nFile had ${data.total_in_file} entries (${data.valid_count} valid).\nPushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
+      let msg = ` Pushed successfully!\nFile had ${data.total_in_file} entries (${data.valid_count} valid).\nPushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
         (data.all_pushed ? "\nAll valid questions are now in the live DB, in the correct order." : "");
       if (data.invalid_skipped && data.invalid_skipped.length) {
         msg += `\nSkipped (invalid): ${data.invalid_skipped.length}`;
@@ -379,25 +365,6 @@ groupSelect.onchange = () => {
   });
 };
 
-/* ============================================================
-   GENERATION: job-based flow with progress + auto-continue
-   ------------------------------------------------------------
-   The backend now runs generation as a background job
-   (/generate-questions/start + /generate-questions/status) instead
-   of one long blocking request, and the time budget it gives itself
-   scales with how many questions you asked for. So instead of one
-   45s-capped call that could only produce a fraction of a big
-   request (e.g. 21 of 100, or 0 of 150), we:
-     1) start a job and poll it every 2s, showing live progress
-     2) if the job stops early ONLY because it ran out of time
-        (quota_limited_reason === "time_budget"), we automatically
-        fire another job with the same Exam Code (which appends,
-        never duplicates) requesting just the remaining count --
-        repeating until the full requested amount is reached
-     3) if it stops because the Gemini key hit its daily quota, or
-        because the PDF genuinely doesn't have enough distinct
-        content left, we stop and show you exactly why
-   ============================================================ */
 const GEN_POLL_INTERVAL_MS = 2000;
 const GEN_MAX_AUTO_CONTINUES = 25;
 const GEN_OVERALL_TIMEOUT_MS = 20 * 60 * 1000; // 20 min safety net
@@ -472,11 +439,11 @@ async function runFullGeneration(baseFields, overallTarget) {
     if (outcome.error) return { error: outcome.error, lastResult };
 
     lastResult = outcome.result;
-    achievedSoFar = lastResult.count; // running total already stored under this dy_code
+    achievedSoFar = lastResult.count;
     remaining = overallTarget - achievedSoFar;
 
     if (remaining <= 0) break;
-    if (lastResult.quota_limited_reason !== "time_budget") break; // quota/content exhausted -- stop and report
+    if (lastResult.quota_limited_reason !== "time_budget") break; 
   }
 
   return { result: lastResult, achievedSoFar };
