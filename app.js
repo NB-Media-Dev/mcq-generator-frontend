@@ -1,4 +1,4 @@
-const API_BASE = "https://mcq-generator-backend-c6o1.onrender.com";
+const API_BASE = "http://127.0.0.1:8000";
 const fileEl = document.getElementById("file");
 const btn = document.getElementById("btn");
 const standardSelect = document.getElementById("standardSelect");
@@ -51,7 +51,7 @@ function parseServerDate(v) {
     s = s.replace(" ", "T") + "Z";
   }
   const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 
 function formatGeneratedAt(v) {
@@ -59,6 +59,7 @@ function formatGeneratedAt(v) {
   if (!d) return "";
   return d.toLocaleString(void 0, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
+
 
 function timeAgo(v) {
   const d = parseServerDate(v);
@@ -104,9 +105,11 @@ function setDownloadLinksEnabled(enabled) {
 }
 
 let currentPushFileKey = null;
+let currentResultsCount = 0;
 
-function showResultsView(title, questions, query, fileKey, warnMsg, generatedAt) {
+function showResultsView(title, questions, query, fileKey, warnMsg, generatedAt, newlyAddedCount) {
   setDownloadLinksEnabled(false);
+  currentResultsCount = (questions || []).length;
 
   document.getElementById("viewTitle").textContent = title;
   const ts = `_ts=${Date.now()}`;
@@ -133,6 +136,25 @@ function showResultsView(title, questions, query, fileKey, warnMsg, generatedAt)
     metaEl.textContent = "";
   }
 
+  const statsBox = document.getElementById("statsSummaryBox");
+  if (questions && questions.length > 0) {
+    const newCount = (typeof newlyAddedCount === "number")
+      ? newlyAddedCount
+      : questions.filter(q => q.is_new).length;
+    const total = questions.length;
+    const existed = Math.max(0, total - newCount);
+
+    statsBox.innerHTML = `
+      <span class="stat-pill existed-pill"> Previously Existed: <strong>${existed}</strong></span>
+      <span class="stat-pill new-pill"> Newly Added: <strong>${newCount}</strong></span>
+      <span class="stat-pill total-pill">Total Questions: <strong>${total}</strong></span>
+    `;
+    statsBox.classList.remove("hidden");
+  } else {
+    statsBox.classList.add("hidden");
+    statsBox.innerHTML = "";
+  }
+
   const warnEl = document.getElementById("resultsWarnBanner");
   if (warnMsg) {
     warnEl.textContent = warnMsg;
@@ -149,12 +171,18 @@ function showResultsView(title, questions, query, fileKey, warnMsg, generatedAt)
 
   const statusEl = document.getElementById("liveStatus");
   statusEl.textContent = "";
-  statusEl.classList.remove("error-banner", "success", "error");
+  statusEl.classList.remove("error-banner", "success", "error", "partial");
 
   renderQuestions(questions);
   showView("results-view");
+  refreshLiveStatusBadge();
 }
 setDownloadLinksEnabled(false);
+async function refreshLiveStatusBadge() {
+  const statusEl = document.getElementById("liveStatus");
+  if (statusEl) statusEl.innerHTML = "";
+}
+document.getElementById("examTypeSelect").addEventListener("change", refreshLiveStatusBadge);
 
 document.getElementById("pushLiveBtn").onclick = async () => {
   if (!currentPushFileKey) return;
@@ -197,6 +225,7 @@ document.getElementById("pushLiveBtn").onclick = async () => {
   } finally {
     pushBtn.disabled = false;
     pushBtn.textContent = "Push to Live DB";
+    setTimeout(refreshLiveStatusBadge, 300);
   }
 };
 
@@ -227,7 +256,7 @@ pushExternalJsonBtn.onclick = async () => {
     if (data.status === "success") {
       let msg = ` Pushed successfully!\nFile had ${data.total_in_file} entries (${data.valid_count} valid).\nPushed: ${data.pushed_count} | Already pushed before: ${data.skipped_already_pushed} | Failed: ${data.failed_count}` +
         (data.all_pushed ? "\nAll valid questions are now in the live DB, in the correct order." : "");
-      if (data.invalid_skipped && data.invalid_skipped.length) {
+      if (data.invalid_skipped?.length) {
         msg += `\nSkipped (invalid): ${data.invalid_skipped.length}`;
         console.warn("Invalid entries skipped:", data.invalid_skipped);
       }
@@ -317,7 +346,7 @@ document.querySelectorAll(".options").forEach(group => {
     const radio = label.querySelector('input[type="radio"]');
     if (radio) radio.checked = true;
     if (group.dataset.group === "count") {
-      if (radio && radio.value === "custom") {
+      if (radio?.value === "custom") {
         customCountContainer.classList.remove("hidden");
         customCountInput.focus();
       } else {
@@ -367,11 +396,10 @@ groupSelect.onchange = () => {
 
 const GEN_POLL_INTERVAL_MS = 2000;
 const GEN_MAX_AUTO_CONTINUES = 25;
-const GEN_OVERALL_TIMEOUT_MS = 20 * 60 * 1000; // 20 min safety net
+const GEN_OVERALL_TIMEOUT_MS = 20 * 60 * 1000; 
 
-const genProgressBox = document.getElementById("genProgressBox");
+const genStatusRow = document.getElementById("genStatusRow");
 const gpStage = document.getElementById("gpStage");
-const gpFill = document.getElementById("gpFill");
 const gpCount = document.getElementById("gpCount");
 const gpSub = document.getElementById("gpSub");
 const gpCancelBtn = document.getElementById("gpCancelBtn");
@@ -379,16 +407,15 @@ const gpCancelBtn = document.getElementById("gpCancelBtn");
 let genCancelled = false;
 gpCancelBtn.onclick = () => {
   genCancelled = true;
-  gpStage.textContent = "Cancelling... (finishing current step)";
+  gpStage.textContent = "Cancelling... please wait";
+  gpCancelBtn.disabled = true;
 };
 
 function setGenProgress(stage, achieved, target, sub) {
-  genProgressBox.classList.remove("hidden");
+  genStatusRow.classList.remove("hidden");
   gpStage.textContent = stage;
-  const pct = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 0;
-  gpFill.style.width = pct + "%";
   gpCount.textContent = `${achieved} / ${target} questions`;
-  gpSub.textContent = sub || "";
+  gpSub.textContent = sub ? `(${sub})` : "";
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -397,7 +424,7 @@ async function startGenerationJob(formFields) {
   const formData = new FormData();
   Object.entries(formFields).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== "") formData.append(k, v); });
   const data = await apiFetchJson(`${API_BASE}/generate-questions/start`, { method: "POST", body: formData });
-  return data && data.status === "success" ? data.job_id : null;
+  return data?.status === "success" ? data.job_id : null;
 }
 
 async function pollGenerationJob(jobId, overallAchievedBase, overallTarget) {
@@ -439,14 +466,61 @@ async function runFullGeneration(baseFields, overallTarget) {
     if (outcome.error) return { error: outcome.error, lastResult };
 
     lastResult = outcome.result;
-    achievedSoFar = lastResult.count;
+    achievedSoFar = lastResult.count; 
     remaining = overallTarget - achievedSoFar;
 
     if (remaining <= 0) break;
-    if (lastResult.quota_limited_reason !== "time_budget") break; 
+    if (lastResult.quota_limited_reason !== "time_budget") break;
   }
 
   return { result: lastResult, achievedSoFar };
+}
+
+function resolveRequestedCount(countRadio) {
+  const count = countRadio ? countRadio.value : "10";
+  if (count !== "custom") return Number.parseInt(count, 10);
+
+  const n = Number.parseInt(customCountInput.value.trim(), 10);
+  if (Number.isNaN(n) || n < 1) {
+    alert("Please enter a valid positive number for custom question count.");
+    customCountInput.focus();
+    return null;
+  }
+  return n;
+}
+
+function showCancelledOutcome(outcome) {
+  if (!outcome.lastResult) {
+    alert("Generation was cancelled before any questions were saved.");
+    return;
+  }
+  showResultsView(
+    `File: ${outcome.lastResult.file_key} (Total Questions: ${outcome.lastResult.count})`,
+    outcome.lastResult.questions,
+    `file_key=${encodeURIComponent(outcome.lastResult.file_key)}`,
+    outcome.lastResult.file_key,
+    "Generation was cancelled -- showing what was saved so far. Generate again with the same Exam Code to append the rest.",
+    outcome.lastResult.generated_at
+  );
+}
+
+function showGenerationSuccess(data, requestedCount) {
+  const fileKey = data.file_key;
+  let warnMsg = null;
+  if (data.quota_limited) {
+    warnMsg = data.message;
+  } else if (data.count < requestedCount) {
+    warnMsg = `Generated ${data.count} of ${requestedCount} requested questions.`;
+  }
+  showResultsView(
+    `File: ${fileKey} (Total Questions: ${data.questions ? data.questions.length : 0})`,
+    data.questions,
+    `file_key=${encodeURIComponent(fileKey)}`,
+    fileKey,
+    warnMsg,
+    data.generated_at,
+    data.newly_added_count
+  );
 }
 
 document.getElementById("quizForm").onsubmit = async e => {
@@ -462,17 +536,8 @@ document.getElementById("quizForm").onsubmit = async e => {
   if (!prefixResult.ok) return;
 
   const countRadio = document.querySelector('input[name="count"]:checked');
-  let count = countRadio ? countRadio.value : "10";
-  if (count === "custom") {
-    const n = Number.parseInt(customCountInput.value.trim(), 10);
-    if (Number.isNaN(n) || n < 1) {
-      alert("Please enter a valid positive number for custom question count.");
-      customCountInput.focus();
-      return;
-    }
-    count = n.toString();
-  }
-  const requestedCount = Number.parseInt(count, 10);
+  const requestedCount = resolveRequestedCount(countRadio);
+  if (requestedCount === null) return;
 
   btn.textContent = "Generating...";
   btn.disabled = true;
@@ -493,18 +558,7 @@ document.getElementById("quizForm").onsubmit = async e => {
     const outcome = await runFullGeneration(baseFields, requestedCount);
 
     if (outcome.cancelled) {
-      if (outcome.lastResult) {
-        showResultsView(
-          `File: ${outcome.lastResult.file_key} (Total Questions: ${outcome.lastResult.count})`,
-          outcome.lastResult.questions,
-          `file_key=${encodeURIComponent(outcome.lastResult.file_key)}`,
-          outcome.lastResult.file_key,
-          "Generation was cancelled -- showing what was saved so far. Generate again with the same Exam Code to append the rest.",
-          outcome.lastResult.generated_at
-        );
-      } else {
-        alert("Generation was cancelled before any questions were saved.");
-      }
+      showCancelledOutcome(outcome);
       return;
     }
     if (outcome.error) {
@@ -512,26 +566,14 @@ document.getElementById("quizForm").onsubmit = async e => {
       return;
     }
 
-    const data = outcome.result;
-    const fileKey = data.file_key;
-    let warnMsg = null;
-    if (data.quota_limited) {
-      warnMsg = data.message;
-    } else if (data.count < requestedCount) {
-      warnMsg = `Generated ${data.count} of ${requestedCount} requested questions.`;
-    }
-    showResultsView(
-      `File: ${fileKey} (Total Questions: ${data.questions ? data.questions.length : 0})`,
-      data.questions,
-      `file_key=${encodeURIComponent(fileKey)}`,
-      fileKey,
-      warnMsg,
-      data.generated_at
-    );
+    showGenerationSuccess(outcome.result, requestedCount);
   } finally {
     btn.textContent = "Generate & Append Questions";
     btn.disabled = false;
-    genProgressBox.classList.add("hidden");
+    genCancelled = false;
+    gpCancelBtn.disabled = false;
+    genStatusRow.classList.add("hidden");
+    gpSub.textContent = "";
   }
 };
 
@@ -581,6 +623,23 @@ function renderFilesHistory(files) {
       timeP.textContent = `🕒 First generated ${combinedTimestampLabel(f.generated_at)}`;
       info.appendChild(timeP);
     }
+
+    const badgeRow = document.createElement("div");
+    badgeRow.className = "push-badge-row";
+    const pushed = f.pushed || {};
+    const EXAM_TYPE_LABELS = { daily: "Daily Task", schedule: "Schedule Exam", online: "Online Exam" };
+    Object.keys(EXAM_TYPE_LABELS).forEach(examType => {
+      const pushedCount = pushed[examType] || 0;
+      if (pushedCount === 0) return;
+      const badge = document.createElement("span");
+      const isFull = pushedCount >= f.count;
+      badge.className = `push-badge ${isFull ? "push-badge-full" : "push-badge-partial"}`;
+      badge.textContent = isFull
+        ? `✔ Pushed (${EXAM_TYPE_LABELS[examType]})`
+        : `◐ ${pushedCount}/${f.count} Pushed (${EXAM_TYPE_LABELS[examType]})`;
+      badgeRow.appendChild(badge);
+    });
+    if (badgeRow.children.length) info.appendChild(badgeRow);
 
     const actions = document.createElement("div");
     actions.className = "file-actions";
@@ -647,13 +706,13 @@ async function deleteFileRecord(fileKey) {
 
 function escapeHtml(v) {
   if (v == null) return "";
-  return String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(v).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
 function buildOptionsHtml(q) {
   let html = "";
   const opts = q.options || [q.dy_ans_1, q.dy_ans_2, q.dy_ans_3, q.dy_ans_4];
-  if (opts && opts.length) {
+  if (opts?.length) {
     const labels = ["A", "B", "C", "D"];
     opts.forEach((opt, i) => {
       if (opt) html += `<div class="opt">${labels[i] || ""}. ${escapeHtml(opt)}</div>`;
@@ -696,7 +755,7 @@ function dedupeQuestionsByText(list) {
 function renderQuestions(list) {
   const output = document.getElementById("output");
   output.innerHTML = "";
-  if (!list || !list.length) {
+  if (!list?.length) {
     output.innerHTML = '<p class="empty-state">No questions found.</p>';
     return;
   }

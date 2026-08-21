@@ -85,15 +85,13 @@
 <label><input type="radio" name="level" value="HARD"><span>Hard</span></label>
 </div>
 
-<button type="submit" class="btn" id="btn">DONE</button>
-
-<div id="genProgressBox" class="gen-progress-box hidden">
-<div class="gp-stage" id="gpStage">Starting...</div>
-<div class="gen-progress-bar"><div class="gen-progress-fill" id="gpFill"></div></div>
-<div class="gen-progress-count" id="gpCount">0 / 0</div>
-<div class="gen-progress-sub" id="gpSub"></div>
-<button type="button" class="btn-cancel-gen" id="gpCancelBtn">Cancel Generation</button>
+<button type="submit" class="btn" id="btn">Generate &amp; Append Questions</button>
+<div id="genStatusRow" class="gen-status-row hidden">
+  <span id="gpStage" class="gen-stage-text">Starting...</span>
+  <span id="gpCount" class="gen-count-text">0 / 0</span>
+  <button type="button" class="btn-cancel-gen" id="gpCancelBtn">&#x2715; Cancel</button>
 </div>
+<div id="gpSub" class="gen-sub-text"></div>
 
 <hr style="margin:20px 0; border:0; border-top:1px solid #cbd5e1;">
 
@@ -108,10 +106,12 @@
 <div class="json-push-section">
 <h4>Push an External JSON File to Live DB</h4>
 <div class="json-file-row">
+<label for="externalJsonFile" class="sr-only">Choose external JSON file to push to live DB</label>
 <input type="file" id="externalJsonFile" accept=".json,application/json">
 </div>
 <div id="externalJsonFileName" class="json-file-name"></div>
 <div class="json-push-controls">
+<label for="externalJsonExamType" class="sr-only">Exam type for pushed JSON</label>
 <select id="externalJsonExamType" class="form-control">
 <option value="daily">Daily Task</option>
 <option value="schedule">Schedule Exam</option>
@@ -135,6 +135,7 @@ Re-push even if already pushed
 <h3 style="text-align:center; margin-bottom:15px; color:#1e293b; font-size:20px;">All Stored Files</h3>
 <p style="text-align:center;color:#64748b;font-size:13px;margin-bottom:15px;">Select a file below to open all of its questions in full screen.</p>
 <div class="search-box-container">
+<label for="historyFilterInput" class="sr-only">Filter stored files</label>
 <input type="text" id="historyFilterInput" class="form-control" placeholder="Filter stored files by name, subject, standard or board...">
 </div>
 <div class="container" id="historyListContainer"></div>
@@ -146,6 +147,7 @@ Re-push even if already pushed
 <div class="card">
 <h3 id="viewTitle" style="text-align:center; margin-bottom:6px; color:#1e293b; font-size:20px;">Questions</h3>
 <div id="generatedMeta" class="generated-meta hidden"></div>
+<div id="statsSummaryBox" class="stats-summary-box hidden"></div>
 
 <div id="resultsWarnBanner" class="warn-banner hidden"></div>
 
@@ -155,6 +157,7 @@ Re-push even if already pushed
 </div>
 
 <div class="live-push-box">
+<label for="examTypeSelect" class="sr-only">Exam type for live push</label>
 <select id="examTypeSelect" class="form-control">
 <option value="daily">Daily Task</option>
 <option value="schedule">Schedule Exam</option>
